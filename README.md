@@ -60,17 +60,21 @@ diverse spectral capabilities and frequent revisit times.
 
 stereo_dirs:
 
-  - '/explore/nobackup/projects/ilab/projects/ASP_GPU/data/WV02_20160623_10300100577C7E00_1030010058580000'
-  - '/explore/nobackup/projects/ilab/projects/ASP_GPU/data/WV01_20130825_1020010024E78600_10200100241E6200'
-  - '/explore/nobackup/projects/ilab/projects/ASP_GPU/data/WV03_20160616_104001001EBDB400_104001001E13F600'
+```bash
+'/explore/nobackup/projects/ilab/projects/ASP_GPU/data/WV02_20160623_10300100577C7E00_1030010058580000'
+'/explore/nobackup/projects/ilab/projects/ASP_GPU/data/WV01_20130825_1020010024E78600_10200100241E6200'
+'/explore/nobackup/projects/ilab/projects/ASP_GPU/data/WV03_20160616_104001001EBDB400_104001001E13F600'
+```
 
 where:
 
-  - disparity_map_regex: 'out-F.tif'
-  - stereo_pair_regex: '*r100_*m.tif'
-  - lowres_dsm_regex: 'out-DEM_24m.tif'
-  - midres_dsm_regex: 'out-DEM_4m.tif'
-  - highres_dsm_regex: 'out-DEM_1m.tif'
+```bash
+disparity_map_regex: 'out-F.tif'
+stereo_pair_regex: '*r100_*m.tif'
+lowres_dsm_regex: 'out-DEM_24m.tif'
+midres_dsm_regex: 'out-DEM_4m.tif'
+highres_dsm_regex: 'out-DEM_1m.tif'
+```
 
 #### ASP Run
 
