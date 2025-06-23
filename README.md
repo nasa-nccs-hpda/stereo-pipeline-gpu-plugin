@@ -32,6 +32,9 @@ established ASP "plug-in" requirements. If these existing implementations do not
 accuracy or computational performance, the team will develop the GPU-based acceleration module following 
 the currently optimized algorithms in ASP.
 
+This [site](https://stereopipeline.readthedocs.io/en/latest/next_steps.html#stereo-alg-overview) has
+the summary of the current correlator algorithms available in ASP.
+
 ## Dependencies
 
 ### Conda Environment
@@ -111,6 +114,24 @@ parallel_stereo -t rpc       \
   results/run
 ```
 
+To only run the disparity calculation portion:
+
+```bash
+parallel_stereo               \
+  --correlator-mode           \
+  --stereo-algorithm asp_mgm  \
+  --subpixel-mode 9           \
+  run/run-L.tif run/run-R.tif \
+  run_corr/run
+```
+
+Evaluating the correlation with:
+
+```bash
+corr_eval --prefilter-mode 0 --kernel-size 5 5 --metric ncc \
+  run/run-L.tif run/run-R.tif run/run-RD.tif run/run
+```
+
 #### SPGPU Run
 
 ```bash
@@ -146,3 +167,8 @@ The data is available in the Explore cloud under:
 ```bash
 ```
 
+## Analyzing StereoPipeline Correlation Algorithms Implementation
+
+### BlockMatching
+
+The OpenCV blockmatching algorithm is called from [stereo_corr.cc](https://github.com/NeoGeographyToolkit/StereoPipeline/blob/master/src/asp/Tools/stereo_corr.cc). The function [call_opencv_bm_or_sgbm](https://github.com/NeoGeographyToolkit/StereoPipeline/blob/master/src/asp/Core/LocalAlignment.cc) calls OpenCV.

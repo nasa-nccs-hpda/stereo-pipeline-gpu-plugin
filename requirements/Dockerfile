@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get install -y --no-install-recommends \
         wget vim curl git procps gcc g++ bzip2 libssl-dev \
-        libsqlite3-dev libx11-dev libgeos++-dev libproj-dev \
+        libsqlite3-dev libx11-dev libx11-xcb1 libgeos++-dev libproj-dev \
         build-essential parallel libdatetime-perl gawk util-linux bc \
         libgdbm-dev libc6-dev libbz2-dev libffi-dev \
         zlib1g-dev liblzma-dev libgirepository1.0-dev libcairo2-dev \
