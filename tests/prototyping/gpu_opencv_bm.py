@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import time
 
 """
+    } else if (alg_name == "opencv_bm") {
+      default_opts = std::string("-block_size 21 -texture_thresh 10 -prefilter_cap 31 ") +
+        "-uniqueness_ratio 15 -speckle_size 100 -speckle_range 32 -disp12_diff 1";
+
     } else if (alg_name == "opencv_sgbm") {
       
       default_opts = std::string("-mode sgbm -block_size 3 -P1 8 -P2 32 -prefilter_cap 63 ") +

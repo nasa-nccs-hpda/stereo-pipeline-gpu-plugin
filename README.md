@@ -35,12 +35,83 @@ the currently optimized algorithms in ASP.
 This [site](https://stereopipeline.readthedocs.io/en/latest/next_steps.html#stereo-alg-overview) has
 the summary of the current correlator algorithms available in ASP.
 
+## Adding new algorithms to ASP
+
+ASP makes it possible for anybody to add their own algorithm to be used for stereo 
+correlation without having to recompile ASP itself.
+
+Any such algorithm must be a program to be invoked as:
+
+```bash
+myprog <options> left_image.tif right_image.tif \
+  output_disparity.tif
+```
+
+Here, as often assumed in the computer vision community, left_image.tif and right_image.tif are small image clips with epipolar alignment applied to them, so that the epipolar lines are horizontal and the resulting disparity only need to be searched in the x direction (along each row). The images must have the same size. (ASP will take care of preparing these images.)
+
+The images must be in the TIF format, with pixel values being of the float type, and no-data pixels being set to NaN. The output disparity is expected to satisfy the same assumptions and be of dimensions equal to those of the input images.
+
+The options passed to this program are expected to have no other characters except letters, numbers, space, period, underscore, plus, minus, and equal signs. Each option must have exactly one value, such as:
+
+```bash
+-opt1 val1 -opt2 val2 -opt3 val3
+```
+
+(More flexible options, including boolean ones, so with no value, may be implemented going forward.)
+
+Such a program, say named myprog, should be copied to the location:
+
+```bash
+plugins/stereo/myprog/bin/myprog
+```
+
+relative to the ASP top-level directory, with any libraries in:
+
+```bash
+plugins/stereo/myprog/lib
+```
+
+Then, add a line to the file:
+
+```bash
+plugins/stereo/plugin_list.txt
+```
+
+in the ASP top-level directory, in the format:
+
+```bash
+myprog plugins/stereo/myprog/bin/myprog plugins/stereo/myprog/lib
+```
+
+The entries here are the program name (in lowercase), path to the program, and path to any libraries apart from those shipped with ASP (the last entry is optional).
+
+Then, ASP can invoke this program by calling it, for example, as:
+
+```bash
+parallel_stereo --alignment-method local_epipolar \
+  --stereo-algorithm "myprog <options>"           \
+  <images> <cameras> <output prefix>
+```
+
+The program will be called for each pair of locally aligned tiles obtained from these input images, with one subdirectory for each such pair of inputs. That subdirectory will also have the output disparity produced by the program. All such disparities will be read back by ASP, blended together, then ASP will continue with the steps of disparity filtering and triangulation.
+
+It may be helpful to visit one of such subdirectories, examine the stereo_corr log file which will show how precisely the program was called, and also look at its input image tiles and output disparity stored there. Note such auxiliary data is removed by default, unless parallel_stereo is called with the option --keep-only unchanged (Section 16.52).
+
+## GPU Implementation
+
+Give the above explanation, we will deliver a container that provides:
+  - the NVIDIA drivers
+  - the plugin binaries
+  - the plugin txt files modified
+  - documentation
+
 ## Dependencies
 
 ### Conda Environment
 
-```bash
-```
+We might consider enabling the use of conda environments with cudatoolkit
+installed as part of this work, together with the asp conda package.
+This work is still TBD.
 
 ### Container
 
