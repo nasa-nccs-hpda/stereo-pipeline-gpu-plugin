@@ -41,7 +41,16 @@ the currently optimized algorithms in ASP.
 
 ### Container
 
+Downloading the container:
+
 ```bash
+singularity build --sandbox /lscratch/jacaraba/container/spgpu docker://nasanccs/spgpu:latest
+```
+
+If using Singularity and you want to shell into the container:
+
+```bash
+singularity shell --nv -B $NOBACKUP,/explore/nobackup/people,/explore/nobackup/projects /lscratch/jacaraba/container/spgpu
 ```
 
 ## Directory Configurations
@@ -84,6 +93,22 @@ highres_dsm_regex: 'out-DEM_1m.tif'
 #### ASP Run
 
 ```bash
+parallel_stereo -t rpc       \
+  --stereo-algorithm asp_mgm \
+  --subpixel-mode 9          \
+  left.tif right.tif         \
+  results/run
+```
+
+or
+
+```bash
+parallel_stereo -t rpc       \
+  --stereo-algorithm asp_mgm \
+  --subpixel-mode 9          \
+  left.tif right.tif         \
+  left.xml right.xml         \
+  results/run
 ```
 
 #### SPGPU Run
