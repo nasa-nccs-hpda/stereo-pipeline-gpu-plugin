@@ -49,6 +49,11 @@ the currently optimized algorithms in ASP.
 The following are example files we will test our workflows with.
 Missing lunar and mars data within the examples.
 
+| Dataset    | Explore Cloud Path                                              |
+| ---------- | --------------------------------------------------------------- |
+| WorldView  | /explore/nobackup/projects/ilab/projects/ASP_GPU/data/worldview |
+| HiRISE     | /explore/nobackup/projects/ilab/projects/ASP_GPU/data/hirise    |
+
 ### WorldView Data
 
 WorldView data, provided by Maxar, refers to high-resolution satellite imagery collected
@@ -86,7 +91,7 @@ highres_dsm_regex: 'out-DEM_1m.tif'
 ```bash
 ```
 
-### Mars Data
+### Mars Reconnaissance Orbiter HiRISE Data
 
 Example taken from [ASP Documentation](https://stereopipeline.readthedocs.io/en/latest/examples/hirise.html).
 
@@ -99,6 +104,11 @@ several gigabytes each. Working with this data requires patience as it will take
 wget -r -l1 -np \
   "http://hirise-pds.lpl.arizona.edu/PDS/EDR/ESP/ORB_029400_029499/ESP_029421_2300/" \
   -A "*RED*IMG"
+```
+
+The data is available in the Explore cloud under:
+
+```bash
 ```
 
 #### ASP Run
