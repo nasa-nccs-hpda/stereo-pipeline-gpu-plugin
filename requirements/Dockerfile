@@ -10,7 +10,7 @@ RUN apt-get update && \
         wget vim curl git procps gcc g++ bzip2 libssl-dev \
         libsqlite3-dev libx11-dev libx11-xcb1 libgeos++-dev libproj-dev \
         build-essential parallel libdatetime-perl gawk util-linux bc \
-        libgdbm-dev libc6-dev libbz2-dev libffi-dev \
+        libgdbm-dev libc6-dev libbz2-dev libffi-dev libgdal-dev gdal-bin \
         zlib1g-dev liblzma-dev libgirepository1.0-dev libcairo2-dev \
         pkg-config gir1.2-gtk-3.0 libnetcdf-dev libhdf4-dev && \
     apt-get -y autoremove && \
