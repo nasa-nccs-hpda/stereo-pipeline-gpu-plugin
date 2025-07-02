@@ -136,6 +136,7 @@ Missing lunar and mars data within the examples.
 | ---------- | --------------------------------------------------------------- |
 | WorldView  | /explore/nobackup/projects/ilab/projects/ASP_GPU/data/worldview |
 | HiRISE     | /explore/nobackup/projects/ilab/projects/ASP_GPU/data/hirise    |
+| BlackSky   | /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky  |
 
 ### WorldView Data
 
@@ -236,6 +237,16 @@ The data is available in the Explore cloud under:
 #### SPGPU Run
 
 ```bash
+```
+
+### BlackSky
+
+Example #1 Location:
+
+```bash
+/explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif
+/explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif
+/explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-aligned-disparity.tif
 ```
 
 ## Analyzing StereoPipeline Correlation Algorithms Implementation

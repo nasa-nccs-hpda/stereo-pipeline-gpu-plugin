@@ -1,11 +1,9 @@
 FROM nvcr.io/nvidia/pytorch:25.05-py3
 
-# Arguments to pass to the image
 ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
 RUN apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get install -y --no-install-recommends \
@@ -19,7 +17,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt
 
-# Install Stereo Pipeline
 RUN mkdir -p "/opt/DgStereo" && \
     wget "${STEREO_URL}" -O /opt/StereoPipeline.tar.bz2 && \
     cd /opt && \
@@ -28,6 +25,61 @@ RUN mkdir -p "/opt/DgStereo" && \
     mv /opt/StereoPipeline* /opt/StereoPipeline
 
 RUN pip install rioxarray
+
+# Install build dependencies for OpenCV
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        cmake \
+        ninja-build \
+        libgtk2.0-dev \
+        libavcodec-dev \
+        libavformat-dev \
+        libswscale-dev \
+        libtbb2 \
+        libtbb-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libtiff-dev \
+        libdc1394-22-dev \
+        python3-dev \
+        python3-numpy \
+        libv4l-dev \
+        libxvidcore-dev \
+        libx264-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+ARG OPENCV_VERSION=4.9.0
+
+RUN mkdir -p /opt/opencv_build && \
+    cd /opt && \
+    git clone --branch ${OPENCV_VERSION} --depth 1 https://github.com/opencv/opencv.git && \
+    git clone --branch ${OPENCV_VERSION} --depth 1 https://github.com/opencv/opencv_contrib.git && \
+    cd /opt/opencv && \
+    mkdir build && \
+    cd build && \
+    cmake -G Ninja \
+      -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D OPENCV_EXTRA_MODULES_PATH=/opt/opencv_contrib/modules \
+      -D WITH_CUDA=ON \
+      -D ENABLE_FAST_MATH=1 \
+      -D CUDA_FAST_MATH=1 \
+      -D WITH_CUBLAS=1 \
+      -D WITH_V4L=ON \
+      -D WITH_QT=OFF \
+      -D WITH_OPENGL=ON \
+      -D BUILD_opencv_python3=ON \
+      -D BUILD_opencv_python2=OFF \
+      -D BUILD_TESTS=OFF \
+      -D BUILD_PERF_TESTS=OFF \
+      -D BUILD_EXAMPLES=OFF \
+      -D BUILD_opencv_dnn=ON \
+      -D CUDA_ARCH_BIN="All" \
+      .. && \
+    ninja && \
+    ninja install && \
+    ldconfig && \
+    rm -rf /opt/opencv /opt/opencv_contrib /opt/opencv_build
 
 HEALTHCHECK NONE
 ENTRYPOINT []
