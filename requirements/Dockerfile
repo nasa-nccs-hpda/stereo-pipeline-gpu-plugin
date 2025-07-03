@@ -4,6 +4,7 @@ ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/d
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install main dependencies and GDAL
 RUN apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get install -y --no-install-recommends \
@@ -17,6 +18,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt
 
+# Install StereoPipeline
 RUN mkdir -p "/opt/DgStereo" && \
     wget "${STEREO_URL}" -O /opt/StereoPipeline.tar.bz2 && \
     cd /opt && \
@@ -24,9 +26,10 @@ RUN mkdir -p "/opt/DgStereo" && \
     rm /opt/StereoPipeline.tar.bz2 && \
     mv /opt/StereoPipeline* /opt/StereoPipeline
 
+# Python geospatial tools
 RUN pip install rioxarray
 
-# Install build dependencies for OpenCV
+# Install OpenCV build dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         cmake \
@@ -35,12 +38,10 @@ RUN apt-get update && \
         libavcodec-dev \
         libavformat-dev \
         libswscale-dev \
-        libtbb2 \
         libtbb-dev \
         libjpeg-dev \
         libpng-dev \
         libtiff-dev \
-        libdc1394-22-dev \
         python3-dev \
         python3-numpy \
         libv4l-dev \
@@ -48,6 +49,7 @@ RUN apt-get update && \
         libx264-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# Build OpenCV with CUDA
 ARG OPENCV_VERSION=4.9.0
 
 RUN mkdir -p /opt/opencv_build && \
