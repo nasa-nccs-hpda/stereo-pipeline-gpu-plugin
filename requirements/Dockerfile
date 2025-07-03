@@ -49,13 +49,11 @@ RUN apt-get update && \
         libx264-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Build OpenCV with CUDA (DNN disabled for compatibility)
-ARG OPENCV_VERSION=4.11.0
-
+# Build OpenCV from master with CUDA (DNN disabled for compatibility)
 RUN mkdir -p /opt/opencv_build && \
     cd /opt && \
-    git clone --branch ${OPENCV_VERSION} --depth 1 https://github.com/opencv/opencv.git && \
-    git clone --branch ${OPENCV_VERSION} --depth 1 https://github.com/opencv/opencv_contrib.git && \
+    git clone https://github.com/opencv/opencv.git && \
+    git clone https://github.com/opencv/opencv_contrib.git && \
     cd /opt/opencv && \
     mkdir build && \
     cd build && \
