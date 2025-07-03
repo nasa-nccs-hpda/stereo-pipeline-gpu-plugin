@@ -50,7 +50,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Build OpenCV with CUDA (DNN disabled for compatibility)
-ARG OPENCV_VERSION=4.9.0
+ARG OPENCV_VERSION=4.11.0
 
 RUN mkdir -p /opt/opencv_build && \
     cd /opt && \
