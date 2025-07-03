@@ -49,7 +49,7 @@ RUN apt-get update && \
         libx264-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Build OpenCV with CUDA
+# Build OpenCV with CUDA (DNN disabled for compatibility)
 ARG OPENCV_VERSION=4.9.0
 
 RUN mkdir -p /opt/opencv_build && \
@@ -75,8 +75,8 @@ RUN mkdir -p /opt/opencv_build && \
       -D BUILD_TESTS=OFF \
       -D BUILD_PERF_TESTS=OFF \
       -D BUILD_EXAMPLES=OFF \
-      -D BUILD_opencv_dnn=ON \
-      -D CUDA_ARCH_BIN="All" \
+      -D BUILD_opencv_dnn=OFF \
+      -D CUDA_ARCH_BIN="6.0;7.0;7.5;8.0;8.6;9.0" \
       .. && \
     ninja && \
     ninja install && \
