@@ -99,7 +99,7 @@ It may be helpful to visit one of such subdirectories, examine the stereo_corr l
 
 ## GPU Implementation
 
-Give the above explanation, we will deliver a container that provides:
+Given the above explanation, we will deliver a container that provides:
   - the NVIDIA drivers
   - the plugin binaries
   - the plugin txt files modified
@@ -124,7 +124,7 @@ singularity build --sandbox /lscratch/jacaraba/container/spgpu docker://nasanccs
 If using Singularity and you want to shell into the container:
 
 ```bash
-singularity shell --nv -B $NOBACKUP,/explore/nobackup/people,/explore/nobackup/projects /lscratch/jacaraba/container/spgpu
+singularity shell --nv -B $NOBACKUP,/explore/nobackup/people,/explore/nobackup/projects,/panfs/ccds02/nobackup/people /lscratch/jacaraba/container/spgpu
 ```
 
 ## Directory Configurations
@@ -207,6 +207,7 @@ corr_eval --prefilter-mode 0 --kernel-size 5 5 --metric ncc \
 #### SPGPU Run
 
 ```bash
+TBD with the new plugin
 ```
 
 ### Mars Reconnaissance Orbiter HiRISE Data
@@ -224,19 +225,19 @@ wget -r -l1 -np \
   -A "*RED*IMG"
 ```
 
-The data is available in the Explore cloud under:
-
-```bash
-```
-
 #### ASP Run
 
+The ASP website has details on how to run this portion. Update this section
+with those changes.
+
 ```bash
+TBD
 ```
 
 #### SPGPU Run
 
 ```bash
+TBD with the new plugin
 ```
 
 ### BlackSky
@@ -249,8 +250,112 @@ Example #1 Location:
 /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-aligned-disparity.tif
 ```
 
+### GPU Correlators
+
+Compilation Example (from inside the container):
+
+```bash
+g++ /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/tests/prototyping/gpu_opencv_bm.cpp -o /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/tests/prototyping/gpu_opencv_bm   -I/usr/local/include/opencv4   -I/usr/include/gdal   -L/usr/local/lib   -lopencv_core   -lopencv_imgproc   -lopencv_highgui   -lopencv_calib3d   -lopencv_cudaimgproc   -lopencv_cudastereo   -lopencv_imgcodecs  -lgdal -DHAVE_OPENCV_CUDA=1
+```
+
+Some example execution from initial testing:
+
+```bash
+/explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/tests/prototyping/gpu_opencv_bm /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif
+
+/explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/tests/prototyping/gpu_opencv_bm /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif \
+  64 \
+  21 \
+  10 \
+  31 \
+  15 \
+  100 \
+  32 \
+  1
+```
+
+Example output:
+
+```bash
+Singularity> /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/tests/prototyping/gpu_opencv_bm /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif
+Loaded rasters with size: 3473 x 5958
+Warning: No geotransform found, using identity transform.
+CPU StereoBM time: 0.0892171 seconds
+Saved GeoTIFF: disparity_cpu.tif
+GPU StereoBM time: 0.0241288 seconds
+Saved GeoTIFF: disparity_gpu.tif
+```
+
 ## Analyzing StereoPipeline Correlation Algorithms Implementation
+
+This section is work in progress.
 
 ### BlockMatching
 
 The OpenCV blockmatching algorithm is called from [stereo_corr.cc](https://github.com/NeoGeographyToolkit/StereoPipeline/blob/master/src/asp/Tools/stereo_corr.cc). The function [call_opencv_bm_or_sgbm](https://github.com/NeoGeographyToolkit/StereoPipeline/blob/master/src/asp/Core/LocalAlignment.cc) calls OpenCV.
+
+Over the course of this implementation, we created a custom **GPU-based disparity map generator** leveraging **OpenCV’s CUDA StereoBM** functionality. Our goal was to replicate the behavior of NASA’s **Ames Stereo Pipeline (ASP)** `opencv_bm` correlator, which internally uses OpenCV’s CPU implementation, but instead harness GPU acceleration to process large epipolar-aligned image tiles faster.
+
+The workflow involved several steps. First, we built a C++ program capable of ingesting two input rasters (float GeoTIFFs with NaN nodata), normalizing their pixel intensity ranges robustly to 8-bit images suitable for StereoBM, and computing disparities on the GPU. We implemented a careful handling of nodata, ensuring any zero disparities produced by the GPU (which typically indicate invalid matches) were converted to `NaN` in the output. To maintain consistency with ASP’s convention, we also flipped the sign of the disparities to match the negative scale expected in downstream processing.
+
+A key challenge we encountered was that the **raw GPU disparities had significantly smaller magnitudes** compared to the CPU outputs (e.g., -0.2 vs. -6.5 for similar regions). This discrepancy likely arises because the GPU implementation uses different internal normalization and scoring heuristics compared to the CPU version. To bridge this gap, we introduced a **scaling factor**, computed as the ratio between a reference CPU mean disparity and the GPU mean, thereby aligning the value ranges and improving interpretability when blending or mosaicking these outputs with CPU-generated disparity maps.
+
+By combining robust normalization, clear invalid pixel handling, sign flipping, and scaling, we achieved a reproducible GPU disparity workflow that produces outputs similar in character to ASP’s standard opencv\_bm correlator but can run significantly faster on modern NVIDIA GPUs. This approach can be integrated into ASP’s plugin framework for large-scale stereo pipelines requiring GPU acceleration.
+
+Example compilation:
+
+```bash
+g++ /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_bm_gpu.cpp -o /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_bm_gpu   -I/usr/local/include/opencv4   -I/usr/include/gdal   -L/usr/local/lib   -lopencv_core   -lopencv_imgproc   -lopencv_highgui   -lopencv_calib3d   -lopencv_cudaimgproc   -lopencv_cudastereo   -lopencv_imgcodecs  -lgdal -DHAVE_OPENCV_CUDA=1
+```
+
+Example execution:
+
+```bash
+/explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_bm_gpu   -num_disp 64   -block_size 21   -texture_thresh 10   -prefilter_cap 31   -uniqueness_ratio 15   -speckle_size 100   -speckle_range 32   -disp12_diff 1   /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif disparity.tif
+```
+
+### SGM
+
+In this workflow, we implemented a GPU-accelerated stereo disparity estimation pipeline using OpenCV’s CUDA StereoSGM. The process begins by reading the left and right input rasters with GDAL and normalizing them tile by tile. Tiling is critical because it allows processing of large rasters that would otherwise exceed GPU memory limits. Each tile is optionally padded and passed to the StereoSGM algorithm, which computes the local disparity map on the GPU with subpixel precision. To handle overlapping tiles, we aggregate disparities into a running sum and count matrices, which we average after all tiles are processed to produce a smoothly blended output.
+
+A key improvement we introduced is robust nodata masking: prior to stereo matching, we create a mask of valid pixels (i.e., those not containing NaNs) and explicitly track where the input data is invalid. After computing the disparity map, we set disparities to NaN in any pixel where the input was nodata or where the disparity computation itself failed. This ensures that no artificial disparity values “leak” into empty regions—a common problem when using block matching algorithms that cannot distinguish between valid content and uninitialized pixels. Finally, the blended disparity raster is saved as a GeoTIFF with NaNs explicitly marked as nodata, ensuring clean, reliable outputs ready for further analysis or visualization.
+
+Example compilation:
+
+```bash
+g++ /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_sgm_gpu.cpp -o /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_sgm_gpu   -I/usr/local/include/opencv4   -I/usr/include/gdal   -L/usr/local/lib   -lopencv_core   -lopencv_imgproc   -lopencv_highgui   -lopencv_calib3d   -lopencv_cudaimgproc   -lopencv_cudastereo   -lopencv_imgcodecs  -lgdal -DHAVE_OPENCV_CUDA=1
+```
+
+Example run:
+
+```bash
+/explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_sgm_gpu -num_disp 128 -mode hh4 -min_disp 0 -p1 10 -p2 120 -uniqueness 1 /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif disparity_sgm.tif
+```
+
+### StereoBeliefPropagation
+
+Example compilation:
+
+```bash
+g++ /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_bp_gpu.cpp -o /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_bp_gpu   -I/usr/local/include/opencv4   -I/usr/include/gdal   -L/usr/local/lib   -lopencv_core   -lopencv_imgproc   -lopencv_highgui   -lopencv_calib3d   -lopencv_cudaimgproc   -lopencv_cudastereo   -lopencv_imgcodecs  -lgdal -DHAVE_OPENCV_CUDA=1
+```
+
+Example run:
+
+```bash
+/explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_bp_gpu -num_disp 128 -iters 5 -levels 4 /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif disparity_bp.tif
+```
+
+### StereoConstantSpaceBP
+
+Example compilation:
+
+```bash
+g++ /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_csbp_gpu.cpp -o /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_csbp_gpu   -I/usr/local/include/opencv4   -I/usr/include/gdal   -L/usr/local/lib   -lopencv_core   -lopencv_imgproc   -lopencv_highgui   -lopencv_calib3d   -lopencv_cudaimgproc   -lopencv_cudastereo   -lopencv_imgcodecs  -lgdal -DHAVE_OPENCV_CUDA=1
+```
+
+Example run:
+
+```bash
+/explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_csbp_gpu -num_disp 128 -iters 5 /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif disparity_csbp.tif
+```
