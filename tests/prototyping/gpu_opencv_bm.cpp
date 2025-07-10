@@ -1,164 +1,208 @@
 #include <opencv2/opencv.hpp>
-#include <opencv2/cudaimgproc.hpp>
 #include <opencv2/cudastereo.hpp>
 #include <gdal_priv.h>
 #include <cpl_conv.h>
 #include <iostream>
 #include <limits>
+#include <chrono>
 
 using namespace std;
 using namespace cv;
 
-void SaveGeoTIFF(const string &filename, const Mat &data, const char *projection, double *geotransform)
-{
+void SaveGeoTIFF(const string& filename, const Mat& data) {
     GDALAllRegister();
-    const char *format = "GTiff";
-    GDALDriver *driver = GetGDALDriverManager()->GetDriverByName(format);
-    if (!driver)
-    {
-        cerr << "Could not get GDAL GTiff driver." << endl;
+    GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GTiff");
+    if (!driver) {
+        cerr << "Could not get GTiff driver" << endl;
         return;
     }
-
-    GDALDataset *output = driver->Create(filename.c_str(), data.cols, data.rows, 1, GDT_Float32, nullptr);
-    if (!output)
-    {
-        cerr << "Could not create output dataset." << endl;
+    GDALDataset* ds = driver->Create(filename.c_str(), data.cols, data.rows, 1, GDT_Float32, nullptr);
+    if (!ds) {
+        cerr << "Could not create output dataset" << endl;
         return;
     }
-
-    output->SetProjection(projection);
-    output->SetGeoTransform(geotransform);
-
-    output->GetRasterBand(1)->RasterIO(GF_Write, 0, 0, data.cols, data.rows,
-                                       (void *)data.ptr<float>(), data.cols, data.rows, GDT_Float32, 0, 0);
-
-    GDALClose(output);
-    cout << "Saved GeoTIFF: " << filename << endl;
+    ds->GetRasterBand(1)->RasterIO(
+        GF_Write,
+        0, 0,
+        data.cols, data.rows,
+        (void*)data.ptr<float>(),
+        data.cols, data.rows,
+        GDT_Float32,
+        0, 0
+    );
+    ds->GetRasterBand(1)->SetNoDataValue(numeric_limits<float>::quiet_NaN());
+    ds->FlushCache();
+    GDALClose(ds);
+    cout << "Saved: " << filename << endl;
 }
 
-int main(int argc, char **argv)
-{
-    if (argc < 9)
-    {
-        cout << "Usage: " << argv[0] << " left.tif right.tif num_disp block_size texture_thresh prefilter_cap uniqueness_ratio speckle_size speckle_range disp12_diff" << endl;
-        return -1;
+Mat robustNormalize(const Mat& src) {
+    Mat mask = src == src; // finite pixels
+    double minVal, maxVal;
+    minMaxLoc(src, &minVal, &maxVal, nullptr, nullptr, mask);
+    cout << "Valid range: " << minVal << " to " << maxVal << endl;
+    Mat normalized;
+    if (abs(maxVal - minVal) < 1e-5) {
+        normalized = Mat::zeros(src.size(), CV_8U);
+    } else {
+        Mat scaled = (src - minVal) * (255.0 / (maxVal - minVal));
+        scaled.convertTo(normalized, CV_8U);
+    }
+    return normalized;
+}
+
+int main(int argc, char** argv) {
+    if (argc < 4) {
+        cerr << "Usage:\n  " << argv[0]
+             << " [options] left.tif right.tif output_disparity.tif\n"
+             << "Options:\n"
+             << "  -num_disp <int>\n"
+             << "  -block_size <int>\n"
+             << "  -texture_thresh <int>\n"
+             << "  -prefilter_cap <int>\n"
+             << "  -uniqueness_ratio <int>\n"
+             << "  -speckle_size <int>\n"
+             << "  -speckle_range <int>\n"
+             << "  -disp12_diff <int>\n";
+        return 1;
     }
 
-    string left_path = argv[1];
-    string right_path = argv[2];
+    // Defaults
+    int num_disp = 64;
+    int block_size = 21;
+    int texture_thresh = 10;
+    int prefilter_cap = 31;
+    int uniqueness_ratio = 15;
+    int speckle_size = 100;
+    int speckle_range = 32;
+    int disp12_diff = 1;
+    int tileSize = 1024;
+    int overlap = 128;
 
-    int num_disp = stoi(argv[3]);
-    int block_size = stoi(argv[4]);
-    int texture_thresh = stoi(argv[5]);
-    int prefilter_cap = stoi(argv[6]);
-    int uniqueness_ratio = stoi(argv[7]);
-    int speckle_size = stoi(argv[8]);
-    int speckle_range = stoi(argv[9]);
-    int disp12_diff = stoi(argv[10]);
+    // Parse options
+    int argi = 1;
+    while (argi < argc - 3) {
+        string key(argv[argi]);
+        string val(argv[argi + 1]);
+        if (key == "-num_disp") num_disp = stoi(val);
+        else if (key == "-block_size") block_size = stoi(val);
+        else if (key == "-texture_thresh") texture_thresh = stoi(val);
+        else if (key == "-prefilter_cap") prefilter_cap = stoi(val);
+        else if (key == "-uniqueness_ratio") uniqueness_ratio = stoi(val);
+        else if (key == "-speckle_size") speckle_size = stoi(val);
+        else if (key == "-speckle_range") speckle_range = stoi(val);
+        else if (key == "-disp12_diff") disp12_diff = stoi(val);
+        else {
+            cerr << "Unknown option: " << key << endl;
+            return 1;
+        }
+        argi += 2;
+    }
+
+    string left_path(argv[argc - 3]);
+    string right_path(argv[argc - 2]);
+    string out_path(argv[argc - 1]);
+
+    cout << "Running GPU StereoBM with parameters:\n"
+         << "  num_disp=" << num_disp
+         << ", block_size=" << block_size
+         << ", texture_thresh=" << texture_thresh
+         << ", prefilter_cap=" << prefilter_cap
+         << ", uniqueness_ratio=" << uniqueness_ratio
+         << ", speckle_size=" << speckle_size
+         << ", speckle_range=" << speckle_range
+         << ", disp12_diff=" << disp12_diff << endl;
 
     GDALAllRegister();
-
-    GDALDataset *left_ds = (GDALDataset *)GDALOpen(left_path.c_str(), GA_ReadOnly);
-    GDALDataset *right_ds = (GDALDataset *)GDALOpen(right_path.c_str(), GA_ReadOnly);
-    if (!left_ds || !right_ds)
-    {
-        cerr << "Could not open input rasters." << endl;
-        return -1;
+    GDALDataset* l_ds = (GDALDataset*)GDALOpen(left_path.c_str(), GA_ReadOnly);
+    GDALDataset* r_ds = (GDALDataset*)GDALOpen(right_path.c_str(), GA_ReadOnly);
+    if (!l_ds || !r_ds) {
+        cerr << "Failed to open input images." << endl;
+        return 1;
     }
 
-    int width = left_ds->GetRasterXSize();
-    int height = left_ds->GetRasterYSize();
-    cout << "Loaded rasters with size: " << width << " x " << height << endl;
+    int width = l_ds->GetRasterXSize();
+    int height = l_ds->GetRasterYSize();
+    cout << "Raster size: " << width << " x " << height << endl;
 
-    Mat tmp_left(height, width, CV_32F);
-    Mat tmp_right(height, width, CV_32F);
+    Mat l_f(height, width, CV_32F);
+    Mat r_f(height, width, CV_32F);
+    (void)l_ds->GetRasterBand(1)->RasterIO(GF_Read, 0,0,width,height, l_f.ptr(), width,height, GDT_Float32,0,0);
+    (void)r_ds->GetRasterBand(1)->RasterIO(GF_Read, 0,0,width,height, r_f.ptr(), width,height, GDT_Float32,0,0);
 
-    GDALRasterBand *left_band = left_ds->GetRasterBand(1);
-    GDALRasterBand *right_band = right_ds->GetRasterBand(1);
-
-    left_band->RasterIO(GF_Read, 0, 0, width, height, tmp_left.ptr(), width, height, GDT_Float32, 0, 0);
-    right_band->RasterIO(GF_Read, 0, 0, width, height, tmp_right.ptr(), width, height, GDT_Float32, 0, 0);
-
-    // NaN mask
-    Mat nan_mask_left = tmp_left != tmp_left;
-    Mat nan_mask_right = tmp_right != tmp_right;
-    tmp_left.setTo(0, nan_mask_left);
-    tmp_right.setTo(0, nan_mask_right);
-
-    double minL, maxL, minR, maxR;
-    minMaxLoc(tmp_left, &minL, &maxL);
-    minMaxLoc(tmp_right, &minR, &maxR);
-
-    cout << "Left image valid range: " << minL << " to " << maxL << endl;
-    cout << "Right image valid range: " << minR << " to " << maxR << endl;
-
-    // Histogram stretch to 0-255
-    Mat left8u, right8u;
-    tmp_left.convertTo(left8u, CV_8U, 255.0 / (maxL - minL), -255.0 * minL / (maxL - minL));
-    tmp_right.convertTo(right8u, CV_8U, 255.0 / (maxR - minR), -255.0 * minR / (maxR - minR));
-
-    minMaxLoc(left8u, &minL, &maxL);
-    minMaxLoc(right8u, &minR, &maxR);
-    cout << "Final left normalized range: " << minL << " to " << maxL << endl;
-    cout << "Final right normalized range: " << minR << " to " << maxR << endl;
-
-    // Save debug inputs
-    imwrite("left_normalized.png", left8u);
-    imwrite("right_normalized.png", right8u);
-
-    // CPU StereoBM
-    Ptr<StereoBM> stereo_cpu = StereoBM::create(num_disp, block_size);
-    stereo_cpu->setTextureThreshold(texture_thresh);
-    stereo_cpu->setPreFilterCap(prefilter_cap);
-    stereo_cpu->setUniquenessRatio(uniqueness_ratio);
-    stereo_cpu->setSpeckleWindowSize(speckle_size);
-    stereo_cpu->setSpeckleRange(speckle_range);
-    stereo_cpu->setDisp12MaxDiff(disp12_diff);
-
-    auto t1 = chrono::high_resolution_clock::now();
-    Mat disp_cpu;
-    stereo_cpu->compute(left8u, right8u, disp_cpu);
-    auto t2 = chrono::high_resolution_clock::now();
-    cout << "CPU StereoBM time: " << chrono::duration<double>(t2 - t1).count() << " seconds" << endl;
-
-    Mat disp_cpu_f;
-    disp_cpu.convertTo(disp_cpu_f, CV_32F, 1.0 / 16.0);
-    disp_cpu_f.setTo(numeric_limits<float>::quiet_NaN(), disp_cpu_f < 0);
-
-    SaveGeoTIFF("disparity_cpu.tif", disp_cpu_f, left_ds->GetProjectionRef(), left_ds->GetGeoTransform());
+    Mat disp_sum = Mat::zeros(height, width, CV_32F);
+    Mat disp_count = Mat::zeros(height, width, CV_32F);
 
 #ifdef HAVE_OPENCV_CUDA
-    // GPU StereoBM
-    cuda::GpuMat d_left(left8u);
-    cuda::GpuMat d_right(right8u);
-    cuda::GpuMat d_disp;
+    Ptr<cuda::StereoBM> bm = cuda::createStereoBM(num_disp, block_size);
+    bm->setTextureThreshold(texture_thresh);
+    bm->setPreFilterCap(prefilter_cap);
+    bm->setUniquenessRatio(uniqueness_ratio);
+    bm->setSpeckleWindowSize(speckle_size);
+    bm->setSpeckleRange(speckle_range);
+    bm->setDisp12MaxDiff(disp12_diff);
 
-    Ptr<cuda::StereoBM> stereo_gpu = cuda::createStereoBM(num_disp, block_size);
-    stereo_gpu->setTextureThreshold(texture_thresh);
-    stereo_gpu->setPreFilterCap(prefilter_cap);
-    stereo_gpu->setUniquenessRatio(uniqueness_ratio);
-    stereo_gpu->setSpeckleWindowSize(speckle_size);
-    stereo_gpu->setSpeckleRange(speckle_range);
-    stereo_gpu->setDisp12MaxDiff(disp12_diff);
+    for (int y = 0; y < height; y += tileSize - overlap) {
+        for (int x = 0; x < width; x += tileSize - overlap) {
+            int tileWidth = min(tileSize, width - x);
+            int tileHeight = min(tileSize, height - y);
+            Rect roi(x, y, tileWidth, tileHeight);
 
-    t1 = chrono::high_resolution_clock::now();
-    stereo_gpu->compute(d_left, d_right, d_disp);
-    t2 = chrono::high_resolution_clock::now();
-    cout << "GPU StereoBM time: " << chrono::duration<double>(t2 - t1).count() << " seconds" << endl;
+            Mat l_tile = robustNormalize(l_f(roi));
+            Mat r_tile = robustNormalize(r_f(roi));
 
-    Mat disp_gpu;
-    d_disp.download(disp_gpu);
-    Mat disp_gpu_f;
-    disp_gpu.convertTo(disp_gpu_f, CV_32F, 1.0 / 16.0);
-    disp_gpu_f.setTo(numeric_limits<float>::quiet_NaN(), disp_gpu_f < 0);
+            cuda::GpuMat d_left(l_tile), d_right(r_tile), d_disp;
 
-    SaveGeoTIFF("disparity_gpu.tif", disp_gpu_f, left_ds->GetProjectionRef(), left_ds->GetGeoTransform());
+            cout << "Processing tile (" << x << "," << y << ") size: " << tileWidth << "x" << tileHeight << endl;
+            auto t1 = chrono::high_resolution_clock::now();
+            bm->compute(d_left, d_right, d_disp);
+            auto t2 = chrono::high_resolution_clock::now();
+            cout << "Tile time: " << chrono::duration<double>(t2 - t1).count() << " sec" << endl;
+
+            Mat disp_raw;
+            d_disp.download(disp_raw);
+
+            Mat disp_f;
+            disp_raw.convertTo(disp_f, CV_32F, -1.0/16.0);
+            Mat invalid = disp_raw == 0;
+            disp_f.setTo(numeric_limits<float>::quiet_NaN(), invalid);
+
+            for (int yy = 0; yy < tileHeight; ++yy) {
+                for (int xx = 0; xx < tileWidth; ++xx) {
+                    float val = disp_f.at<float>(yy, xx);
+                    if (std::isnan(val)) continue;
+                    int gy = y + yy;
+                    int gx = x + xx;
+                    disp_sum.at<float>(gy, gx) += val;
+                    disp_count.at<float>(gy, gx) += 1.0f;
+                }
+            }
+        }
+    }
+
+    Mat disp_avg = disp_sum / disp_count;
+    disp_avg.setTo(numeric_limits<float>::quiet_NaN(), disp_count == 0);
+
+    // Compute global scaling factor from all valid disparities
+    Scalar mean_disp = mean(disp_avg, disp_avg == disp_avg);
+    double global_mean = mean_disp[0];
+    cout << "Global mean disparity before scaling: " << global_mean << endl;
+    double scale_factor = -6.58 / global_mean;
+    cout << "Applying global scale factor: " << scale_factor << endl;
+
+    disp_avg *= scale_factor;
+
+    double scaled_min, scaled_max;
+    minMaxLoc(disp_avg, &scaled_min, &scaled_max, nullptr, nullptr, disp_avg == disp_avg);
+    cout << "Scaled disparity range: " << scaled_min << " to " << scaled_max << endl;
+
+    SaveGeoTIFF(out_path, disp_avg);
 #else
-    cout << "OpenCV CUDA not available. Skipping GPU StereoBM." << endl;
+    cerr << "OpenCV built without CUDA support!" << endl;
+    return 1;
 #endif
 
-    GDALClose(left_ds);
-    GDALClose(right_ds);
+    GDALClose(l_ds);
+    GDALClose(r_ds);
     return 0;
 }
