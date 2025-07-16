@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'container-test'
+  workflow_dispatch:   # <---- Manual trigger
 
 jobs:
   docker:

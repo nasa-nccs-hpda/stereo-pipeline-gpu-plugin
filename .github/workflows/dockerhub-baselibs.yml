@@ -5,6 +5,11 @@ on:
     branches:
       - 'main'
       - 'container-test'
+    paths:
+      - 'requirements/Dockerfile.Baselibs'
+  schedule:
+    - cron: '0 0 1 * *'   # At 00:00 on day-of-month 1 (monthly)
+  workflow_dispatch:   # <---- Manual trigger
 
 jobs:
   docker:
