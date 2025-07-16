@@ -115,10 +115,21 @@ This work is still TBD.
 
 ### Container
 
-Downloading the container:
+There are two containers being built from this repository:
+
+- docker://nasanccs/spgpu-baselibs: contains all the backend dependencies
+- docker://nasanccs/spgpu: contains the compiled correlators
+
+Downloading the production container with the deployed correlators:
 
 ```bash
 singularity build --sandbox /lscratch/jacaraba/container/spgpu docker://nasanccs/spgpu:latest
+```
+
+Downloading the container for development:
+
+```bash
+singularity build --sandbox /lscratch/jacaraba/container/spgpu docker://nasanccs/spgpu-baselibs:latest
 ```
 
 If using Singularity and you want to shell into the container:
