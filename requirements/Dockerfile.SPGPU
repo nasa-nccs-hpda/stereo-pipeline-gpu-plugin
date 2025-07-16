@@ -1,4 +1,4 @@
-FROM nasanccs/spgpu:latest
+FROM nasanccs/spgpu-baselibs:latest
 
 RUN echo "Here you will compile the correlators and add them to the desired location"
 

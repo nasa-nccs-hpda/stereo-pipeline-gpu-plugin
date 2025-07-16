@@ -1,9 +1,10 @@
-name: CI to Dockerhub
+name: CI to Dockerhub - Baselibs
 
 on:
   push:
     branches:
       - 'main'
+      - 'container-test'
 
 jobs:
   docker:
@@ -50,6 +51,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./requirements/Dockerfile
+          file: ./requirements/Dockerfile.Baselibs
           push: true
-          tags: nasanccs/spgpu:latest
+          tags: nasanccs/spgpu-baselibs:latest

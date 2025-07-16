@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'container-test'
 
 jobs:
   docker:
@@ -52,4 +53,4 @@ jobs:
           context: .
           file: ./requirements/Dockerfile.SPGPU
           push: true
-          tags: nasanccs/spgpu-app:latest
+          tags: nasanccs/spgpu:latest
