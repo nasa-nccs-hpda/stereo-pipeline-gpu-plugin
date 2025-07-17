@@ -22,6 +22,7 @@ RUN mkdir -p ${ilabSource} && \
 		
 # The plug ins must be compiled.
 ARG build=${ilabSource}/"build"
+RUN mkdir ${build}
 
 RUN g++ ${repoPath}/spgpu/correlator/opencv_bm_gpu.cpp -o ${build}/opencv_bm_gpu -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
 
