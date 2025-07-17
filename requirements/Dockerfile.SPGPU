@@ -34,7 +34,7 @@ RUN g++ ${repoPath}/spgpu/correlator/${name}.cpp -o ${build}/${name} -I/usr/loca
 
 ARG dest=${plugInPath}/${name}/bin
 RUN mkdir -p ${dest}
-COPY ${build}/${name} $dest
+RUN cp ${build}/${name} $dest
 
 # ----------------------------------------------------------------------------
 # Remove the cloned repository.
