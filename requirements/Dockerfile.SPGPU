@@ -2,6 +2,14 @@ FROM nasanccs/spgpu-baselibs:latest
 
 RUN echo "Here you will compile the correlators and add them to the desired location"
 
+RUN pwd
+
+# This is the location where Dockerfile.Baselibs installs Stereo Pipeline.
+# The GPU plug ins must be install 
+ARG stereoPipelinePath="/opt/StereoPipeline"
+ARG plugInPath=${stereoPipelinePath}/"plugins"
+RUN ls ${plugInPath}
+
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
