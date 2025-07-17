@@ -1,14 +1,35 @@
 FROM nasanccs/spgpu-baselibs:latest
 
-RUN echo "Here you will compile the correlators and add them to the desired location"
+RUN echo "Search for this in the log file to see what happened."
 
-RUN pwd
-
+# ---
 # This is the location where Dockerfile.Baselibs installs Stereo Pipeline.
-# The GPU plug ins must be install 
+# The GPU plug ins must be copied here.
+# ---
 ARG stereoPipelinePath="/opt/StereoPipeline"
-ARG plugInPath=${stereoPipelinePath}/"plugins"
+ARG plugInPath=${stereoPipelinePath}/"plugins/stereo"
 RUN ls ${plugInPath}
+
+# To get the GPU plug-in files, the repository must be cloned.
+ARG ilabSource="/usr/local/ilab"
+ARG repoName="stereo-pipeline-gpu-plugin"
+ARG repoPath=${ilabSource}/${repoName}
+
+RUN mkdir -p ${ilabSource} && \
+    git clone --single-branch --branch main \
+		https://github.com/nasa-nccs-hpda/${repoName} \
+        ${repoPath}
+		
+# The plug ins must be compiled.
+ARG build=${ilabSource}/"build"
+
+RUN g++ ${repoPath}/spgpu/correlator/opencv_bm_gpu.cpp -o ${build}/opencv_bm_gpu -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
+
+# Copy the appropriate files to Stereo Pipeline, as described in  https://stereopipeline.readthedocs.io/en/latest/stereo_algorithms.html#adding-new-algorithms-to-asp
+
+
+
+# Remove the cloned repository.
 
 HEALTHCHECK NONE
 ENTRYPOINT []
