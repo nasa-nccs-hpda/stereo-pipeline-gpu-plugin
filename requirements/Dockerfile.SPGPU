@@ -11,10 +11,10 @@ RUN echo "Search for this in the log file to see what happened."
 # ----------------------------------------------------------------------------
 ARG ilabSource="/usr/local/ilab"
 ARG repoName="stereo-pipeline-gpu-plugin"
-ARG repoPath=${ilabSource}/${repoName}
-ARG build=${ilabSource}/"build"
-ARG stereoPipelinePath="/opt/StereoPipeline"
-ARG plugInPath=${stereoPipelinePath}/"plugins/stereo"
+ARG repoDir=${ilabSource}/${repoName}
+ARG buildDir=${ilabSource}/"buildDir"
+ARG stereoPipelineDir="/opt/StereoPipeline"
+ARG plugInDir="plugins/stereo"
 
 # ----------------------------------------------------------------------------
 # To get the GPU plug-in files, the repository must be cloned.
@@ -22,19 +22,25 @@ ARG plugInPath=${stereoPipelinePath}/"plugins/stereo"
 RUN mkdir -p ${ilabSource} && \
     git clone --single-branch --branch main \
 		https://github.com/nasa-nccs-hpda/${repoName} \
-        ${repoPath}
+        ${repoDir}
 
 # ----------------------------------------------------------------------------
-# Compile the BM plug in and copy it to Stereo Pipeline.
+# Compile the BM plug in, copy it to Stereo Pipeline and
+# update plugin_list.txt.
 # ----------------------------------------------------------------------------
 ARG name="opencv_bm_gpu"
-RUN mkdir ${build}
+RUN mkdir ${buildDir}
 
-RUN g++ ${repoPath}/spgpu/correlator/${name}.cpp -o ${build}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
+RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
 
-ARG dest=${plugInPath}/${name}/bin
-RUN mkdir -p ${dest}
-RUN cp ${build}/${name} $dest
+ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
+ARG bin
+RUN mkdir -p ${binDir}
+RUN cp ${buildDir}/${name} $binDir
+
+#  opencv_bm_gpu  plugins/stereo/opencv_bm_gpu/bin/opencv_bm_gpu  plugins/stereo/opencv_bm_gpu/lib
+# printf "\ttest\thi/exec\thi/lib\n" >> plugin_list.txt
+printf "  %s%s%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Remove the cloned repository.
