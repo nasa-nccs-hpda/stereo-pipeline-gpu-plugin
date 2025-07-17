@@ -40,7 +40,7 @@ RUN cp ${buildDir}/${name} $binDir
 
 #  opencv_bm_gpu  plugins/stereo/opencv_bm_gpu/bin/opencv_bm_gpu  plugins/stereo/opencv_bm_gpu/lib
 # printf "\ttest\thi/exec\thi/lib\n" >> plugin_list.txt
-printf "  %s%s%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s%s%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Remove the cloned repository.
