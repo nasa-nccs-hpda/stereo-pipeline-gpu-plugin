@@ -2,11 +2,8 @@ FROM nasanccs/spgpu-baselibs:latest
 
 # ----------------------------------------------------------------------------
 # https://stereopipeline.readthedocs.io/en/latest/stereo_algorithms.html#adding-new-algorithms-to-asp
-# ----------------------------------------------------------------------------
 
-RUN echo "Search for this in the log file to see what happened."
-
-# ----------------------------------------------------------------------------
+#
 # Paths
 # ----------------------------------------------------------------------------
 ARG ilabSource="/usr/local/ilab"
@@ -34,11 +31,10 @@ RUN mkdir -p ${buildDir}
 RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
 
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-ARG bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s%s%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the BP plug in, copy it to Stereo Pipeline and
@@ -50,11 +46,10 @@ RUN mkdir -p ${buildDir}
 RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
 
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-ARG bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s%s%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the CSBP plug in, copy it to Stereo Pipeline and
@@ -66,11 +61,10 @@ RUN mkdir -p ${buildDir}
 RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
 
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-ARG bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s%s%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the SGM plug in, copy it to Stereo Pipeline and
@@ -82,11 +76,10 @@ RUN mkdir -p ${buildDir}
 RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
 
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-ARG bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s%s%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Remove the cloned repository.
