@@ -9,6 +9,22 @@
 using namespace std;
 using namespace cv;
 
+// Add this at the top of opencv_bm_gpu.cpp, after includes
+#ifdef COMPILE_FOR_TESTING
+// When compiling for testing, make functions available for linking
+// but don't include main()
+#define SKIP_MAIN
+#endif
+
+// Your existing includes and functions...
+
+// At the end of the file, wrap main() function:
+#ifndef SKIP_MAIN
+int main(int argc, char** argv) {
+    // Your existing main() function code...
+}
+#endif
+
 void SaveGeoTIFF(const string& filename, const Mat& data) {
     GDALAllRegister();
     GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GTiff");

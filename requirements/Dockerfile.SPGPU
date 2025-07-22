@@ -34,7 +34,7 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the BP plug in, copy it to Stereo Pipeline and
@@ -49,7 +49,7 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the CSBP plug in, copy it to Stereo Pipeline and
@@ -64,7 +64,7 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the SGM plug in, copy it to Stereo Pipeline and
@@ -79,7 +79,7 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Remove the cloned repository.

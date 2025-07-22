@@ -370,3 +370,27 @@ Example run:
 ```bash
 /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_csbp_gpu -num_disp 128 -iters 5 /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif disparity_csbp.tif
 ```
+
+## Using GPU Correlators within ASP
+###Check out the container
+
+Note, you will need a lot of disk space for this.  The environment variables SINGULARITY\_CACHEDIR and SINGULARITY\_TMPDIR determine where the bulk of the disk space is needed.</br>
+
+`cd /directory/for/container`
+
+`singularity pull docker://nasanccs/spgpu:latest`
+ 
+###Shell into the container
+`singularity shell --nv -B $NOBACKUP,/explore/nobackup/people,/explore/nobackup/projects,/panfs/ccds02/nobackup/people /directory/for/container/spgpu_latest.sif`
+
+### Run ASP
+
+This example demonstrates the basic format for invoking plug-in correlators from ASP.  Refer to the ASP documentation for parallel_stereo application details.</br>
+
+`cd /directory/for/output`
+
+`parallel_stereo --alignment-method local_epipolar --session-type rpc --stereo-algorithm opencv_bm_gpu BSG-117-20221009-125017-40530679_georeferenced-pan.tif BSG-117-20221009-125025-40530680_georeferenced-pan.tif bmGpuTest`
+
+Follow this pattern to invoke the other GPU correlators from ASP.</br>
+
+
