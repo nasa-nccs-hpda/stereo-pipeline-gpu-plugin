@@ -81,6 +81,8 @@ RUN mkdir -p /opt/opencv_build && \
     ldconfig && \
     rm -rf /opt/opencv /opt/opencv_contrib /opt/opencv_build
 
+	RUN apt-get install -y gdb
+
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
