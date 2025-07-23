@@ -1,5 +1,7 @@
 FROM nasanccs/spgpu-baselibs:latest
 
+RUN apt-get install -y gdb
+
 # ----------------------------------------------------------------------------
 # https://stereopipeline.readthedocs.io/en/latest/stereo_algorithms.html#adding-new-algorithms-to-asp
 
