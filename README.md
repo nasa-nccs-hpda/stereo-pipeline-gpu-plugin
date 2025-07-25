@@ -393,4 +393,6 @@ This example demonstrates the basic format for invoking plug-in correlators from
 
 Follow this pattern to invoke the other GPU correlators from ASP.</br>
 
-
+## Regression Tests
+In the tests directory are tests for each correlator.  Simply go to that directory and type `make`.  In the regression test code, certain important tests are commented out.  There is a relationship between tile size and overlap size that cause StereoBM to abort.  This will be debugged later.  Should the other correlators exhibit this error, it will be noted here.
+ 

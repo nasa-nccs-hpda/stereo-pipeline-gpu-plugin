@@ -1,72 +1,94 @@
+# Makefile for OpenCV BM GPU Regression Tests
+
+# Compiler settings
 CXX = g++
+CXXFLAGS = -std=c++11 -w -O2 -I ../../spgpu/correlator/
+TEST_DEFINES = -DCOMPILE_FOR_TESTING
 
-CXXFLAGS = -std=c++17 -w -O2 -I/usr/local/include/opencv4 -I/usr/include/gdal
+# Package config for dependencies
+OPENCV_FLAGS = -I/usr/local/include/opencv4 -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs
 
-LDFLAGS = -lpthread -lgdal -lopencv_core
+GDAL_FLAGS = -I/usr/include/gdal -lgdal
 
-# Source files
-MAIN_SRC = ../../spgpu/correlator/opencv_bm_gpu.cpp
-MAIN_TARGET = opencv_bm_gpu
+CUDA_FLAGS = -DHAVE_OPENCV_CUDA
 
-# Object files for shared functions
-SHARED_OBJS = opencv_bm_gpu.o
+# Combine all flags
+ALL_FLAGS = $(CXXFLAGS) $(TEST_DEFINES) $(CUDA_FLAGS) $(OPENCV_FLAGS) $(GDAL_FLAGS)
 
-# Test files
-TEST_SRC = stereo_tests.cpp performance_tests.cpp cmdline_tests.cpp
-TEST_RUNNER = run_tests.cpp
-TEST_TARGET = test_runner
+# File names
+ORIGINAL_SOURCE = ../../spgpu/correlator/opencv_bm_gpu.cpp
+TEST_SOURCE = test_opencv_bm_gpu.cpp
+TEST_EXECUTABLE = test_opencv_bm_gpu
+TEST_LOG = test_results.log
 
-# Individual test targets
-INDIVIDUAL_TESTS = stereo_tests performance_tests cmdline_tests
+# Default target
+.PHONY: all
+all: test
 
-# All targets
-all: $(MAIN_TARGET) $(TEST_TARGET)
+# Build the test executable
+$(TEST_EXECUTABLE): $(TEST_SOURCE) $(ORIGINAL_SOURCE)
+	@echo "Building test executable..."
+	@echo "Compiler flags: $(ALL_FLAGS)"
+	$(CXX) $(TEST_SOURCE) -o $(TEST_EXECUTABLE) $(ALL_FLAGS)
+	@echo "Build successful."
 
-# Main program build
-$(MAIN_TARGET): $(MAIN_SRC)
-	$(CXX) $(CXXFLAGS) -DCOMPILE_FOR_TESTING -c $^ $(LDFLAGS)
+# Run tests
+.PHONY: test
+test: $(TEST_EXECUTABLE)
+	@echo "Running regression tests..."
+	@echo "Test started at: $$(date)" > $(TEST_LOG)
+	@echo "======================================" >> $(TEST_LOG)
+	./$(TEST_EXECUTABLE) 2>&1 | tee -a $(TEST_LOG)
+	@echo "======================================" >> $(TEST_LOG)
+	@echo "Test completed at: $$(date)" >> $(TEST_LOG)
+	@echo ""
+	@echo "Test results saved to: $(TEST_LOG)"
 
-# Shared object file with functions needed by tests
-opencv_bm_gpu.o: $(MAIN_SRC)
-	$(CXX) $(CXXFLAGS) -DCOMPILE_FOR_TESTING -c $<
+# Run tests with verbose output
+.PHONY: test-verbose
+test-verbose: $(TEST_EXECUTABLE)
+	@echo "Running regression tests with verbose output..."
+	@echo "Test started at: $$(date)" > $(TEST_LOG)
+	@echo "======================================" >> $(TEST_LOG)
+	./$(TEST_EXECUTABLE) 2>&1 | tee -a $(TEST_LOG)
+	@echo "======================================" >> $(TEST_LOG)
+	@echo "Test completed at: $$(date)" >> $(TEST_LOG)
+	@echo ""
+	@echo "Detailed test results:"
+	@cat $(TEST_LOG)
 
-# Test runner executable (links with shared functions)
-$(TEST_TARGET): $(TEST_RUNNER) $(TEST_SRC) $(SHARED_OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+# Quick test (without logging)
+.PHONY: test-quick
+test-quick: $(TEST_EXECUTABLE)
+	@echo "Running quick regression tests..."
+	./$(TEST_EXECUTABLE)
 
-# Individual test executables (for debugging)
-stereo_tests: stereo_tests.cpp $(SHARED_OBJS)
-	$(CXX) $(CXXFLAGS) -DRUN_STANDALONE -o $@ $^ $(LDFLAGS)
-
-performance_tests: performance_tests.cpp $(SHARED_OBJS)
-	$(CXX) $(CXXFLAGS) -DRUN_STANDALONE -o $@ $^ $(LDFLAGS)
-
-cmdline_tests: cmdline_tests.cpp $(SHARED_OBJS)
-	$(CXX) $(CXXFLAGS) -DRUN_STANDALONE -o $@ $^ $(LDFLAGS)
-
-# Clean targets
+# Clean up build artifacts
+.PHONY: clean
 clean:
-	rm -f $(MAIN_TARGET) $(TEST_TARGET) $(INDIVIDUAL_TESTS) $(SHARED_OBJS) *.tif *.o
+	@echo "Cleaning up..."
+	@rm -f $(TEST_EXECUTABLE)
+	@rm -f $(TEST_LOG)
+	@rm -f test_*.tif
+	@rm -f *.o
+	@echo "Clean complete."
 
-# Run all tests
-test: $(TEST_TARGET) $(MAIN_TARGET)
-	./$(TEST_TARGET)
+# Clean up all test artifacts including temporary files
+.PHONY: clean-all
+clean-all: clean
+	@echo "Cleaning all test artifacts..."
+	@rm -f *.tif
+	@rm -f *.log
+	@rm -f core.*
+	@echo "Deep clean complete."
 
-# Run individual test suites
-test-stereo: stereo_tests $(MAIN_TARGET)
-	./stereo_tests
+# Debug build
+.PHONY: debug
+debug: CXXFLAGS = -std=c++11 -Wall -Wextra -g -DDEBUG
+debug: $(TEST_EXECUTABLE)
+	@echo "Debug build complete."
 
-test-performance: performance_tests $(MAIN_TARGET)
-	./performance_tests
-
-test-cmdline: cmdline_tests $(MAIN_TARGET)
-	./cmdline_tests
-
-# Install targets (optional)
-install: $(MAIN_TARGET)
-	cp $(MAIN_TARGET) /usr/local/bin/
-
-uninstall:
-	rm -f /usr/local/bin/$(MAIN_TARGET)
-
-.PHONY: all clean test test-stereo test-performance test-cmdline install uninstall
+# Continuous integration target
+.PHONY: ci
+ci: clean check-deps test
+	@echo "CI pipeline completed successfully."
