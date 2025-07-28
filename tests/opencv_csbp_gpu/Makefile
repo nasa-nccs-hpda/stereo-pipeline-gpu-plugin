@@ -16,7 +16,7 @@ CUDA_FLAGS = -DHAVE_OPENCV_CUDA
 ALL_FLAGS = $(CXXFLAGS) $(TEST_DEFINES) $(CUDA_FLAGS) $(OPENCV_FLAGS) $(GDAL_FLAGS)
 
 # File names
-BASE_NAME = opencv_bm_gpu
+BASE_NAME = opencv_csbp_gpu
 ORIGINAL_SOURCE = ../../spgpu/correlator/$(BASE_NAME).cpp
 TEST_SOURCE = test_$(BASE_NAME).cpp
 TEST_EXECUTABLE = test_$(BASE_NAME)

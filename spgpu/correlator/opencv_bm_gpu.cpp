@@ -135,7 +135,6 @@ int runCorrelator(int argc, char** argv)
 		cerr << "--num_disp must be between 1 and 256, inclusive" << endl;
 		return 1;
 	}
-
 	
     string left_path(argv[argc-3]);
     string right_path(argv[argc-2]);
