@@ -1,13 +1,10 @@
 name: CI to Dockerhub - SPGPU App
 
-# TODO: This workflow will change to follow the version of the
-# release from SPGPU. For now, we will container with this effort
-# as is, but will change it at some point in the near future.
-
 on:
   push:
     branches:
-      - 'main'
+      - 'develop'
+      - 'container-test'
   workflow_dispatch:   # <---- Manual trigger
 
 jobs:
@@ -57,4 +54,4 @@ jobs:
           context: .
           file: ./requirements/Dockerfile.SPGPU
           push: true
-          tags: nasanccs/spgpu:latest
+          tags: nasanccs/spgpu:dev

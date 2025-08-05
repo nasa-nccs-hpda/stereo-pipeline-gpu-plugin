@@ -372,7 +372,8 @@ Example run:
 ```
 
 ## Using GPU Correlators within ASP
-###Check out the container
+
+### Check out the container
 
 Note, you will need a lot of disk space for this.  The environment variables SINGULARITY\_CACHEDIR and SINGULARITY\_TMPDIR determine where the bulk of the disk space is needed.</br>
 
@@ -380,7 +381,8 @@ Note, you will need a lot of disk space for this.  The environment variables SIN
 
 `singularity pull docker://nasanccs/spgpu:latest`
  
-###Shell into the container
+### Shell into the container
+
 `singularity shell --nv -B $NOBACKUP,/explore/nobackup/people,/explore/nobackup/projects,/panfs/ccds02/nobackup/people /directory/for/container/spgpu_latest.sif`
 
 ### Run ASP
@@ -394,5 +396,21 @@ This example demonstrates the basic format for invoking plug-in correlators from
 Follow this pattern to invoke the other GPU correlators from ASP.</br>
 
 ## Regression Tests
+
 In the tests directory are tests for each correlator.  Simply go to that directory and type `make`.  In the regression test code, certain important tests are commented out.  There is a relationship between tile size and overlap size that cause StereoBM to abort.  This will be debugged later.  Should the other correlators exhibit this error, it will be noted here.
- 
+
+## Running GPU Correlators as Plugins
+
+### CPU Version
+
+```bash
+/opt/StereoPipeline/bin/stereo_corr --correlator-mode --stereo-algorithm "opencv_bm_gpu -block_size 21 -texture_thresh 10 -prefilter_cap 31 -uniqueness_ratio 15 -speckle_size 100 -speckle_range 32 -disp12_diff 1" --alignment-method local_epipolar /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif  disparity_bm_cpu --skip-low-res-disparity-comp --corr-seed-mode 1 --sgm-collar-size 0 --corr-tile-size 5807 --threads 1 --trans-crop-win 0 0 3193 5807
+```
+
+### GPU Version
+
+```bash
+/opt/StereoPipeline/bin/stereo_corr -t rpc --stereo-algorithm "opencv_bm_gpu -block_size 21 -texture_thresh 10 -prefilter_cap 31 -uniqueness_
+ratio 15 -speckle_size 100 -speckle_range 32 -disp12_diff 1" --alignment-method local_epipolar /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif  disparity_bm_gpu.tif --skip-low-res-disparity-comp --corr-seed-mode 1 --sgm-collar-size 0 --corr-tile-size 5807 --threads 1 --trans-crop-win 0 0 3193 5807
+```
+
