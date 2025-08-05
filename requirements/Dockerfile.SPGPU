@@ -1,0 +1,7 @@
+FROM nasanccs/spgpu-baselibs:latest
+
+RUN echo "Here you will compile the correlators and add them to the desired location"
+
+HEALTHCHECK NONE
+ENTRYPOINT []
+CMD ["/bin/bash"]
