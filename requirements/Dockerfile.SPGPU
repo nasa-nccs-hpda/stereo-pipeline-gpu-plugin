@@ -1,6 +1,90 @@
 FROM nasanccs/spgpu-baselibs:latest
 
-RUN echo "Here you will compile the correlators and add them to the desired location"
+# ----------------------------------------------------------------------------
+# https://stereopipeline.readthedocs.io/en/latest/stereo_algorithms.html#adding-new-algorithms-to-asp
+
+#
+# Paths
+# ----------------------------------------------------------------------------
+ARG ilabSource="/usr/local/ilab"
+ARG repoName="stereo-pipeline-gpu-plugin"
+ARG repoDir=${ilabSource}/${repoName}
+ARG buildDir=${ilabSource}/"buildDir"
+ARG stereoPipelineDir="/opt/StereoPipeline"
+ARG plugInDir="plugins/stereo"
+
+# ----------------------------------------------------------------------------
+# To get the GPU plug-in files, the repository must be cloned.
+# ----------------------------------------------------------------------------
+RUN mkdir -p ${ilabSource} && \
+    git clone --single-branch --branch main \
+		https://github.com/nasa-nccs-hpda/${repoName} \
+        ${repoDir}
+
+# ----------------------------------------------------------------------------
+# Compile the BM plug in, copy it to Stereo Pipeline and
+# update plugin_list.txt.
+# ----------------------------------------------------------------------------
+ARG name="opencv_bm_gpu"
+RUN mkdir -p ${buildDir}
+
+RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
+
+ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
+RUN mkdir -p ${binDir}
+RUN cp ${buildDir}/${name} $binDir
+
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+
+# ----------------------------------------------------------------------------
+# Compile the BP plug in, copy it to Stereo Pipeline and
+# update plugin_list.txt.
+# ----------------------------------------------------------------------------
+ARG name="opencv_bp_gpu"
+RUN mkdir -p ${buildDir}
+
+RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
+
+ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
+RUN mkdir -p ${binDir}
+RUN cp ${buildDir}/${name} $binDir
+
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+
+# ----------------------------------------------------------------------------
+# Compile the CSBP plug in, copy it to Stereo Pipeline and
+# update plugin_list.txt.
+# ----------------------------------------------------------------------------
+ARG name="opencv_csbp_gpu"
+RUN mkdir -p ${buildDir}
+
+RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
+
+ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
+RUN mkdir -p ${binDir}
+RUN cp ${buildDir}/${name} $binDir
+
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+
+# ----------------------------------------------------------------------------
+# Compile the SGM plug in, copy it to Stereo Pipeline and
+# update plugin_list.txt.
+# ----------------------------------------------------------------------------
+ARG name="opencv_sgm_gpu"
+RUN mkdir -p ${buildDir}
+
+RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
+
+ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
+RUN mkdir -p ${binDir}
+RUN cp ${buildDir}/${name} $binDir
+
+RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+
+# ----------------------------------------------------------------------------
+# Remove the cloned repository.
+# ----------------------------------------------------------------------------
+RUN rm -rf ${ilabSource}
 
 HEALTHCHECK NONE
 ENTRYPOINT []

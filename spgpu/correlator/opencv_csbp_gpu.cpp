@@ -10,6 +10,12 @@
 using namespace std;
 using namespace cv;
 
+#ifdef COMPILE_FOR_TESTING
+// When compiling for testing, make functions available for linking
+// but don't include main()
+#define SKIP_MAIN
+#endif
+
 void SaveGeoTIFF(const string& filename, const Mat& data) {
     GDALAllRegister();
     GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GTiff");
@@ -47,7 +53,16 @@ Mat robustNormalize(const Mat& src, const Mat& mask) {
     return normalized;
 }
 
-int main(int argc, char** argv) {
+// ----------------------------------------------------------------------------
+// runCorrelator
+//
+// Regression testing needs a main function which would conflict with this
+// program's main.  Move the business logic from the main to here.
+//
+// int main(int argc, char** argv)
+// ----------------------------------------------------------------------------
+int runCorrelator(int argc, char** argv)
+{
     if (argc < 4) {
         cerr << "Usage:\n"
              << argv[0]
@@ -74,6 +89,17 @@ int main(int argc, char** argv) {
         argi++;
     }
 
+	// ---
+	// The number of disparities must be between 0 and max_supported_ndisp,
+	// the value of which we think is 256.
+	// https://docs.opencv.org/4.x/dd/d47/group__cudastereo.html
+	// ---
+	if (num_disp <= 0 || num_disp > 256) {
+		
+		cerr << "--num_disp must be between 1 and 256, inclusive" << endl;
+		return 1;
+	}
+	
     string left_path(argv[argc - 3]);
     string right_path(argv[argc - 2]);
     string out_path(argv[argc - 1]);
@@ -170,3 +196,13 @@ int main(int argc, char** argv) {
     GDALClose(r_ds);
     return 0;
 }
+
+// ----------------------------------------------------------------------------
+// main
+// ----------------------------------------------------------------------------
+#ifndef SKIP_MAIN
+int main(int argc, char** argv) 
+{
+	return runCorrelator(argc, argv);
+}
+#endif
