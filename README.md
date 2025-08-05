@@ -359,3 +359,18 @@ Example run:
 ```bash
 /explore/nobackup/people/jacaraba/development/stereo-pipeline-gpu-plugin/spgpu/correlator/opencv_csbp_gpu -num_disp 128 -iters 5 /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif disparity_csbp.tif
 ```
+
+## Running GPU Correlators as Plugins
+
+### CPU Version
+
+```bash
+/opt/StereoPipeline/bin/stereo_corr --correlator-mode --stereo-algorithm "opencv_bm_gpu -block_size 21 -texture_thresh 10 -prefilter_cap 31 -uniqueness_ratio 15 -speckle_size 100 -speckle_range 32 -disp12_diff 1" --alignment-method local_epipolar /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif  disparity_bm_cpu --skip-low-res-disparity-comp --corr-seed-mode 1 --sgm-collar-size 0 --corr-tile-size 5807 --threads 1 --trans-crop-win 0 0 3193 5807
+```
+
+### GPU Version
+
+```bash
+/opt/StereoPipeline/bin/stereo_corr -t rpc --stereo-algorithm "opencv_bm_gpu -block_size 21 -texture_thresh 10 -prefilter_cap 31 -uniqueness_
+ratio 15 -speckle_size 100 -speckle_range 32 -disp12_diff 1" --alignment-method local_epipolar /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-left-aligned-tile.tif /explore/nobackup/projects/ilab/projects/ASP_GPU/data/blacksky/large_tile_output_for_correlator/asp_local_align-0_0_3193_5807/0_0_3193_5807-right-aligned-tile.tif  disparity_bm_gpu.tif --skip-low-res-disparity-comp --corr-seed-mode 1 --sgm-collar-size 0 --corr-tile-size 5807 --threads 1 --trans-crop-win 0 0 3193 5807
+```
