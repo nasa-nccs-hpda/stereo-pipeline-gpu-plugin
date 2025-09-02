@@ -43,7 +43,7 @@ RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugIn
 #   system, and will not allow mgm to be overwritten in the shell.
 #   ---
 ARG mgmName="mgm"
-RUN cp ${buildDir}/${name} ${plugInDir}/${mgmName}/bin/${mgmName}
+RUN cp plugins/stereo/opencv_bm_gpu/bin/opencv_bm_gpu plugins/stereo/mgm/bin/mgm
 
 # ----------------------------------------------------------------------------
 # Compile the BP plug in, copy it to Stereo Pipeline and
