@@ -36,6 +36,15 @@ RUN cp ${buildDir}/${name} $binDir
 
 RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
+#   ---
+#	*** TEMPORARY DEBUGGING STEP ***
+#   Overwrite built-in MGM binary, which works, to determine if 
+#   plugins_list.txt is the problem.  The container is a read-only file 
+#   system, and will not allow mgm to be overwritten in the shell.
+#   ---
+ARG mgmName="mgm"
+RUN cp ${buildDir}/${name} ${plugInDir}/${mgmName}/bin/${mgmName}
+
 # ----------------------------------------------------------------------------
 # Compile the BP plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.

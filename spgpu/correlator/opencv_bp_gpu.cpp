@@ -16,23 +16,45 @@ using namespace cv;
 #define SKIP_MAIN
 #endif
 
-void SaveGeoTIFF(const string& filename, const Mat& data) {
+// ----------------------------------------------------------------------------
+// SaveGeoTIFF
+// ----------------------------------------------------------------------------
+void SaveGeoTIFF(const string& filename, const Mat& data) 
+{
     GDALAllRegister();
     GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GTiff");
-    if (!driver) {
+	
+    if (!driver) 
+	{
         cerr << "Could not get GTiff driver" << endl;
         return;
     }
-    GDALDataset* ds = driver->Create(filename.c_str(), data.cols, data.rows, 1, GDT_Float32, nullptr);
-    if (!ds) {
+	
+    GDALDataset* ds = driver->Create(filename.c_str(), 
+							  		 data.cols, 
+									 data.rows, 
+									 1, 
+									 GDT_Float32, 
+									 nullptr);
+
+    if (!ds) 
+	{
         cerr << "Could not create output dataset" << endl;
         return;
     }
-    ds->GetRasterBand(1)->RasterIO(
-        GF_Write, 0, 0, data.cols, data.rows,
-        (void*)data.ptr<float>(), data.cols, data.rows,
-        GDT_Float32, 0, 0
-    );
+	
+    ds->GetRasterBand(1)->RasterIO(GF_Write, 
+								   0, 
+								   0, 
+								   data.cols, 
+								   data.rows,
+        						   (void*)data.ptr<float>(), 
+								   data.cols, 
+								   data.rows,
+        						   GDT_Float32, 
+								   0, 
+								   0);
+								   
     ds->GetRasterBand(1)->SetNoDataValue(numeric_limits<float>::quiet_NaN());
     ds->FlushCache();
     GDALClose(ds);
