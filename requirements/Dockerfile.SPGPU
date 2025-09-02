@@ -36,15 +36,6 @@ RUN cp ${buildDir}/${name} $binDir
 
 RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
-#   ---
-#	*** TEMPORARY DEBUGGING STEP ***
-#   Overwrite built-in MGM binary, which works, to determine if 
-#   plugins_list.txt is the problem.  The container is a read-only file 
-#   system, and will not allow mgm to be overwritten in the shell.
-#   ---
-ARG mgmName="mgm"
-RUN cp plugins/stereo/opencv_bm_gpu/bin/opencv_bm_gpu plugins/stereo/mgm/bin/mgm
-
 # ----------------------------------------------------------------------------
 # Compile the BP plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.
@@ -107,6 +98,17 @@ RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugIn
 # RUN cp ${buildDir}/${name} $binDir
 #
 # RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+
+# ----------------------------------------------------------------------------
+# For debugging, overwrite opencv_bm_gpu.
+# ----------------------------------------------------------------------------
+ARG name="asp_integration_test"
+RUN mkdir -p ${buildDir}
+
+RUN g++ ${repoDir}/tests/${name}.cpp -o ${buildDir}/${name} -I/usr/include/gdal -lgdal
+
+ARG binDir=${stereoPipelineDir}/${plugInDir}/"opencv_bm_gpu"/bin
+RUN cp ${buildDir}/${name} $binDir/"opencv_bm_gpu"
 
 # ----------------------------------------------------------------------------
 # Remove the cloned repository.
