@@ -24,6 +24,9 @@ RUN mkdir -p ${ilabSource} && \
 # ----------------------------------------------------------------------------
 # Compile the BM plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.
+#
+# Note, there is a section below that overwrites opencv_bm_gpu for debugging.
+# Ensure that is commented out, unless the intention is to debug.
 # ----------------------------------------------------------------------------
 ARG name="opencv_bm_gpu"
 RUN mkdir -p ${buildDir}

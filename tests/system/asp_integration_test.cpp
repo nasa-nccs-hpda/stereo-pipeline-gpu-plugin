@@ -19,14 +19,21 @@ using namespace std;
 // ---------------------------------------------------------------------------
 int main(int argc, char** argv) 
 {
+	cout << "This is the asp_integration_test." << endl;
+	
     if (argc < 3) 
 	{
-        cout << "Usage: " << argv[0] << " <left.tif> <right.tif>" << endl;
+        cout << "Usage: " 
+			 << argv[0] 
+			 << " <left.tif> <right.tif> <output disparity file.tif" 
+			 << endl;
+
         return 1;
     }
 
     filesystem::path left_path(argv[1]);
     filesystem::path right_path(argv[2]);
+    filesystem::path out_path(argv[3]);
 	
 	// Read the images.
     GDALAllRegister();
@@ -69,8 +76,6 @@ int main(int argc, char** argv)
 									 0);
 
 	// Create the output data set.
-	filesystem::path out_path = "/tmp/disparity.tif";
-		
     GDALDataset* out_ds = driver->Create(out_path.c_str(),
 										 width,
     									 height,
