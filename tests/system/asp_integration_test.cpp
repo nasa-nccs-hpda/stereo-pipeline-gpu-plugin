@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	// gpu_output-512_512_512_512  -->  512_512_512_512-aligned-disparity.tif
 	filesystem::path parent = left_path.parent_path();
 	string parentStr = parent.string();
-	auto start = parentStr.find("-");
+	int start = parentStr.find("-") + 1;
 	int length = parentStr.length() - start;
 	string prefix = parentStr.substr(start, length);
     filesystem::path out_path = parent / (prefix + "-aligned-disparity.tif");
@@ -110,4 +110,5 @@ int main(int argc, char** argv)
 								   
 	out_ds->FlushCache();
 	GDALClose(out_ds);
+	cout << "Wrote: " << out_path << endl;
 }
