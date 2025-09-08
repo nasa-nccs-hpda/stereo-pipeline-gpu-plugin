@@ -33,7 +33,14 @@ int main(int argc, char** argv)
 
     filesystem::path left_path(argv[1]);
     filesystem::path right_path(argv[2]);
-    filesystem::path out_path("/tmp/disparity-test.tif");
+	
+	// gpu_output-512_512_512_512  -->  512_512_512_512-aligned-disparity.tif
+	filesystem::path parent = left_path.parent_path();
+	string parentStr = parent.string();
+	auto start = parentStr.find("-");
+	int length = parentStr.length() - start;
+	string prefix = parentStr.substr(start, length);
+    filesystem::path out_path = parent / (prefix + "-aligned-disparity.tif");
 	
 	// Read the images.
     GDALAllRegister();
