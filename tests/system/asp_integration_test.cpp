@@ -21,11 +21,11 @@ int main(int argc, char** argv)
 {
 	cout << "This is the asp_integration_test." << endl;
 	
-    if (argc < 3) 
+    if (argc < 2) 
 	{
         cout << "Usage: " 
 			 << argv[0] 
-			 << " <left.tif> <right.tif> <output disparity file.tif" 
+			 << " <left.tif> <right.tif>" 
 			 << endl;
 
         return 1;
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
     filesystem::path left_path(argv[1]);
     filesystem::path right_path(argv[2]);
-    filesystem::path out_path(argv[3]);
+    filesystem::path out_path("/tmp/disparity-test.tif");
 	
 	// Read the images.
     GDALAllRegister();
