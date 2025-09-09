@@ -15,7 +15,7 @@ using namespace std;
 //
 // g++ asp_integration_test.cpp -Lgdal -o asp_integration_test -I/usr/include/gdal -lgdal
 //
-// asp_integration_test /explore/nobackup/people/pmontesa/outASP/blacksky/BSG-STEREO-117-20221009-125017-40530679-stereo/BSG-117-20221009-125017-40530679_georeferenced-pan.tif /explore/nobackup/people/pmontesa/outASP/blacksky/BSG-STEREO-117-20221009-125017-40530679-stereo/BSG-117-20221009-125025-40530680_georeferenced-pan.tif
+// asp_integration_test -a bunch -o f -j unk -p arameters /explore/nobackup/people/pmontesa/outASP/blacksky/BSG-STEREO-117-20221009-125017-40530679-stereo/BSG-117-20221009-125017-40530679_georeferenced-pan.tif /explore/nobackup/people/pmontesa/outASP/blacksky/BSG-STEREO-117-20221009-125017-40530679-stereo/BSG-117-20221009-125025-40530680_georeferenced-pan.tif
 // ---------------------------------------------------------------------------
 int main(int argc, char** argv) 
 {
@@ -31,8 +31,26 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    filesystem::path left_path(argv[1]);
-    filesystem::path right_path(argv[2]);
+	// ---
+	// This utility is meant to be used as a substitute for existing
+	// correlators, each of which has their own set of command-line arguments.
+	// Consume them, to eventually get to the left and right input images.
+	// ---
+	cout << "argc: " << argc << endl;
+    int argi = 1;
+
+    while (argi < argc - 2) 
+	{
+        string key(argv[argi]);
+        string val(argv[argi+1]);
+		argi += 2;
+    }
+
+    filesystem::path left_path(argv[argi++]);
+    filesystem::path right_path(argv[argi]);
+	
+	cout << "left: " << left_path << endl;
+	cout << "right: " << right_path << endl;
 	
 	// gpu_output-512_512_512_512  -->  512_512_512_512-aligned-disparity.tif
 	filesystem::path parent = left_path.parent_path();
