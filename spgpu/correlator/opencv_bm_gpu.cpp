@@ -15,11 +15,11 @@ using namespace cv;
 #define SKIP_MAIN
 #endif
 
-void SaveGeoTIFF(const string& filename, const Mat& data) 
+void SaveGeoTIFF(const string& filename, const Mat& data)
 {
     GDALAllRegister();
     GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GTiff");
-	
+
     if (!driver) {
         cerr << "Could not get GTiff driver" << endl;
         return;
@@ -65,9 +65,9 @@ Mat robustNormalize(const Mat& src) {
 // ----------------------------------------------------------------------------
 int runCorrelator(int argc, char** argv)
 {
-    if (argc < 4) 
+    if (argc < 4)
 	{
-        cerr << "Usage:\n  " 
+        cerr << "Usage:\n  "
 			 << argv[0]
              << " [options] left.tif right.tif output_disparity.tif\n"
              << "Options:\n"
@@ -81,10 +81,10 @@ int runCorrelator(int argc, char** argv)
              << "  -disp12_diff <int>\n"
              << "  -tile <int> (default 1024)\n"
              << "  -overlap <int> (default 64)\n";
-		
+
         return 1;
     }
-	
+
     // Default parameters
     int num_disp = 64;
     int block_size = 21;
@@ -98,14 +98,14 @@ int runCorrelator(int argc, char** argv)
     int overlap = 64;
 
     int argi = 1;
-	
+
 	cout << "argc: " << argc << endl;
-	
-    while (argi < argc - 3) 
+
+    while (argi < argc - 3)
 	{
         string key(argv[argi]);
         string val(argv[argi+1]);
-		
+
         if (key == "-num_disp") num_disp = stoi(val);
         else if (key == "-block_size") block_size = stoi(val);
         else if (key == "-texture_thresh") texture_thresh = stoi(val);
@@ -116,12 +116,12 @@ int runCorrelator(int argc, char** argv)
         else if (key == "-disp12_diff") disp12_diff = stoi(val);
         else if (key == "-tile") tile_size = stoi(val);
         else if (key == "-overlap") overlap = stoi(val);
-        else 
+        else
 		{
             cerr << "Unknown option: " << key << endl;
-            return 1;
+            // return 1;
         }
-        
+
 		argi += 2;
     }
 
@@ -131,11 +131,11 @@ int runCorrelator(int argc, char** argv)
 	// https://docs.opencv.org/4.x/dd/d47/group__cudastereo.html
 	// ---
 	if (num_disp <= 0 || num_disp > 256) {
-		
+
 		cerr << "--num_disp must be between 1 and 256, inclusive" << endl;
 		return 1;
 	}
-	
+
     string left_path(argv[argc-3]);
     string right_path(argv[argc-2]);
     string out_path(argv[argc-1]);
@@ -155,8 +155,8 @@ int runCorrelator(int argc, char** argv)
     GDALAllRegister();
     GDALDataset* l_ds = (GDALDataset*)GDALOpen(left_path.c_str(), GA_ReadOnly);
     GDALDataset* r_ds = (GDALDataset*)GDALOpen(right_path.c_str(), GA_ReadOnly);
-    
-	if (!l_ds || !r_ds) 
+
+	if (!l_ds || !r_ds)
 	{
         cerr << "Failed to open input images." << endl;
         return 1;
@@ -168,7 +168,7 @@ int runCorrelator(int argc, char** argv)
 
     Mat l_f(height, width, CV_32F);
     Mat r_f(height, width, CV_32F);
-	
+
     l_ds->GetRasterBand(1)->RasterIO(GF_Read,
 									 0,
 									 0,
@@ -180,7 +180,7 @@ int runCorrelator(int argc, char** argv)
 									 GDT_Float32,
 									 0,
 									 0);
-									 
+
     r_ds->GetRasterBand(1)->RasterIO(GF_Read,
 									 0,
 									 0,
@@ -197,7 +197,7 @@ int runCorrelator(int argc, char** argv)
     Mat disp_count = Mat::zeros(height, width, CV_32F);
 
 #ifdef HAVE_OPENCV_CUDA
-	
+
     Ptr<cuda::StereoBM> bm = cuda::createStereoBM(num_disp, block_size);
     bm->setTextureThreshold(texture_thresh);
     bm->setPreFilterCap(prefilter_cap);
@@ -205,10 +205,10 @@ int runCorrelator(int argc, char** argv)
     bm->setSpeckleWindowSize(speckle_size);
     bm->setSpeckleRange(speckle_range);
     bm->setDisp12MaxDiff(disp12_diff);
-	
-    for (int y = 0; y < height; y += tile_size - overlap) 
+
+    for (int y = 0; y < height; y += tile_size - overlap)
 	{
-        for (int x = 0; x < width; x += tile_size - overlap) 
+        for (int x = 0; x < width; x += tile_size - overlap)
 		{
             int tile_w = min(tile_size, width - x);
             int tile_h = min(tile_size, height - y);
@@ -221,23 +221,23 @@ int runCorrelator(int argc, char** argv)
             cuda::GpuMat d_right(r_tile);
             cuda::GpuMat d_disp;
 
-            cout << "Processing tile (" 
-				 << x 
-				 << "," 
-				 << y 
-				 << ") size: " 
-				 << tile_w 
-				 << "x" 
-				 << tile_h 
+            cout << "Processing tile ("
+				 << x
+				 << ","
+				 << y
+				 << ") size: "
+				 << tile_w
+				 << "x"
+				 << tile_h
 				 << endl;
-			
+
             auto t1 = chrono::high_resolution_clock::now();
             bm->compute(d_left, d_right, d_disp);
             auto t2 = chrono::high_resolution_clock::now();
-			
-            cout << "Tile time: " 
-				 << chrono::duration<double>(t2 - t1).count() 
-				 << " sec" 
+
+            cout << "Tile time: "
+				 << chrono::duration<double>(t2 - t1).count()
+				 << " sec"
 				 << endl;
 
             Mat disp_raw;
@@ -251,7 +251,7 @@ int runCorrelator(int argc, char** argv)
             // Blend
             for (int yy = 0; yy < tile_h; ++yy)
 			{
-                for (int xx = 0; xx < tile_w; ++xx) 
+                for (int xx = 0; xx < tile_w; ++xx)
 				{
                     float v = disp_f.at<float>(yy, xx);
                     if (std::isnan(v)) continue;
@@ -280,17 +280,17 @@ int runCorrelator(int argc, char** argv)
 
     double scaled_min, scaled_max;
     minMaxLoc(final_disp, &scaled_min, &scaled_max);
-	
-    cout << "Scaled disparity range: " 
-		 << scaled_min 
-		 << " to " 
-		 << scaled_max 
+
+    cout << "Scaled disparity range: "
+		 << scaled_min
+		 << " to "
+		 << scaled_max
 		 << endl;
 
     SaveGeoTIFF(out_path, final_disp);
-	
+
 #else
-    
+
 	cerr << "OpenCV built without CUDA support!" << endl;
     return 1;
 
@@ -305,7 +305,7 @@ int runCorrelator(int argc, char** argv)
 // main
 // ----------------------------------------------------------------------------
 #ifndef SKIP_MAIN
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
 	return runCorrelator(argc, argv);
 }

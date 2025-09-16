@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	{
         cout << "Usage: " 
 			 << argv[0] 
-			 << " <left.tif> <right.tif>" 
+			 << " <left.tif> <right.tif> <disparity.tif>" 
 			 << endl;
 
         return 1;
@@ -39,26 +39,33 @@ int main(int argc, char** argv)
 	cout << "argc: " << argc << endl;
     int argi = 1;
 
-    while (argi < argc - 2) 
+    while (argi < argc - 3) 
 	{
+		cout << "c0" << endl;
         string key(argv[argi]);
         string val(argv[argi+1]);
+		cout << "key: " << key << endl;
+		cout << "val: " << val << endl;
 		argi += 2;
     }
 
+	cout << "c1" << endl;
+	cout << "argi:" << argi << endl;
+	
     filesystem::path left_path(argv[argi++]);
-    filesystem::path right_path(argv[argi]);
+    filesystem::path right_path(argv[argi++]);
+    filesystem::path out_path(argv[argi]);
+	
+	// gpu_output-512_512_512_512  -->  512_512_512_512-aligned-disparity.tif
+	// filesystem::path parent = left_path.parent_path();
+	// string parentStr = parent.string();
+	// int start = parentStr.find("-") + 1;
+	// int length = parentStr.length() - start;
+	// string prefix = parentStr.substr(start, length);
+	// filesystem::path out_path = parent / (prefix + "-aligned-disparity.tif");
 	
 	cout << "left: " << left_path << endl;
 	cout << "right: " << right_path << endl;
-	
-	// gpu_output-512_512_512_512  -->  512_512_512_512-aligned-disparity.tif
-	filesystem::path parent = left_path.parent_path();
-	string parentStr = parent.string();
-	int start = parentStr.find("-") + 1;
-	int length = parentStr.length() - start;
-	string prefix = parentStr.substr(start, length);
-    filesystem::path out_path = parent / (prefix + "-aligned-disparity.tif");
 	
 	// Read the images.
     GDALAllRegister();
