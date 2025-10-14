@@ -37,7 +37,11 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
+RUN mkdir -p ${libDir}
+# RUN "ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 ${libDir}"
+
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the BP plug in, copy it to Stereo Pipeline and
@@ -52,7 +56,7 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the CSBP plug in, copy it to Stereo Pipeline and
@@ -67,7 +71,7 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the SGM plug in, copy it to Stereo Pipeline and
@@ -82,7 +86,7 @@ ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
 RUN mkdir -p ${binDir}
 RUN cp ${buildDir}/${name} $binDir
 
-RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the MGM plug in, copy it to Stereo Pipeline and
@@ -100,18 +104,7 @@ RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugIn
 # RUN mkdir -p ${binDir}
 # RUN cp ${buildDir}/${name} $binDir
 #
-# RUN printf "  %s\t%s\t%s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
-
-# ----------------------------------------------------------------------------
-# For debugging, overwrite opencv_bm_gpu.
-# ----------------------------------------------------------------------------
-ARG name="asp_integration_test"
-RUN mkdir -p ${buildDir}
-
-RUN g++ ${repoDir}/tests/system/${name}.cpp -o ${buildDir}/${name} -I/usr/include/gdal -lgdal
-
-ARG binDir=${stereoPipelineDir}/${plugInDir}/"opencv_bm_gpu"/bin
-RUN cp ${buildDir}/${name} $binDir/"opencv_bm_gpu"
+# RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Remove the cloned repository.
