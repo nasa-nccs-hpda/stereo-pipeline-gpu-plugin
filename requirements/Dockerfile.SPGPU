@@ -40,7 +40,9 @@ RUN cp ${buildDir}/${name} $binDir
 ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
 RUN mkdir -p ${libDir}
 # RUN "ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 ${libDir}"
-RUN "ln -s ../../../../lib/libcurl.so.4 ${libDir}"
+# RUN "ln -s ../../../../lib/libcurl.so.4 ${libDir}"
+RUN "cp ../../../../lib/libcurl.so.4 ${libDir}"
+# RUN "cp ${stereoPipelineDir}/lib/libcurl.so.4 ${libDir}"
 
 RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
