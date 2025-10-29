@@ -39,12 +39,19 @@ RUN cp ${buildDir}/${name} $binDir
 
 ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
 RUN mkdir -p ${libDir}
+
+# These do not work.
 # RUN "ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 ${libDir}"
 # RUN "ln -s ../../../../lib/libcurl.so.4 ${libDir}"
 # RUN "cp ../../../../lib/libcurl.so.4 ${libDir}"
 # RUN "cp ${stereoPipelineDir}/lib/libcurl.so.4 ${libDir}"
 # RUN cp /opt/StereoPipeline/lib/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
-RUN cp /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
+
+# These work.
+# RUN cp /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
+
+# Testing this.
+RUN ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
 
 
 RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt

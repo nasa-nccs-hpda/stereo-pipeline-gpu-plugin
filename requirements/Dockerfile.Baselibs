@@ -81,6 +81,9 @@ RUN mkdir -p /opt/opencv_build && \
     ldconfig && \
     rm -rf /opt/opencv /opt/opencv_contrib /opt/opencv_build
 
+# Refresh the linker cache and create proper symlinks
+RUN ldconfig
+	
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
