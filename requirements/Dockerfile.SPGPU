@@ -43,6 +43,8 @@ RUN mkdir -p ${libDir}
 # RUN "ln -s ../../../../lib/libcurl.so.4 ${libDir}"
 # RUN "cp ../../../../lib/libcurl.so.4 ${libDir}"
 # RUN "cp ${stereoPipelineDir}/lib/libcurl.so.4 ${libDir}"
+# Test with absolute paths first
+RUN cp /opt/StereoPipeline/lib/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
 
 RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
