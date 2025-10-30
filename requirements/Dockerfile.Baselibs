@@ -13,7 +13,7 @@ RUN apt-get update && \
         build-essential parallel libdatetime-perl gawk util-linux bc \
         libgdbm-dev libc6-dev libbz2-dev libffi-dev libgdal-dev gdal-bin \
         zlib1g-dev liblzma-dev libgirepository1.0-dev libcairo2-dev \
-        pkg-config gir1.2-gtk-3.0 libnetcdf-dev libfreexl-dev && \
+        pkg-config gir1.2-gtk-3.0 libnetcdf-dev  && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt
