@@ -4,6 +4,9 @@ ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/d
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
 ENV DEBIAN_FRONTEND=noninteractive
 
+# This should fix errors finding these libraries.
+ENV LD_PRELOAD="/lib/x86_64-linux-gnu/libfreexl.so.1:/lib/x86_64-linux-gnu/libproj.so"
+
 # Install main dependencies and GDAL
 RUN apt-get update && \
     apt-get -y dist-upgrade && \
@@ -13,7 +16,7 @@ RUN apt-get update && \
         build-essential parallel libdatetime-perl gawk util-linux bc \
         libgdbm-dev libc6-dev libbz2-dev libffi-dev libgdal-dev gdal-bin \
         zlib1g-dev liblzma-dev libgirepository1.0-dev libcairo2-dev \
-        pkg-config gir1.2-gtk-3.0 libnetcdf-dev  && \
+        pkg-config gir1.2-gtk-3.0 libnetcdf-dev libfreexl-dev libspatialite-dev && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt

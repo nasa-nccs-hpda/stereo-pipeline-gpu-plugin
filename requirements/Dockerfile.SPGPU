@@ -1,8 +1,5 @@
 FROM nasanccs/spgpu-baselibs:latest
 
-# This should fix errors finding these libraries.
-ENV LD_PRELOAD="/lib/x86_64-linux-gnu/libfreexl.so.1:/lib/x86_64-linux-gnu/libproj.so"
-
 # ----------------------------------------------------------------------------
 # https://stereopipeline.readthedocs.io/en/latest/stereo_algorithms.html#adding-new-algorithms-to-asp
 
