@@ -1,10 +1,11 @@
 # ---
-# This version of Pytorch no longer supports CUDA Compute Capability 7.0 (Tesla V100).
+# This version of Pytorch no longer supports CUDA Compute Capability 7.0 (Tesla V100), and generated the error "CUDA driver version is insufficient for CUDA runtime version in function 'allocate'".
 # FROM nvcr.io/nvidia/pytorch:25.05-py3
 #
 # Instead, use the following version.
+# FROM nvcr.io/nvidia/pytorch:23.05-py3
 # ---
-FROM nvcr.io/nvidia/pytorch:23.05-py3
+FROM nvcr.io/nvidia/pytorch:22.12-py3
 
 ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
