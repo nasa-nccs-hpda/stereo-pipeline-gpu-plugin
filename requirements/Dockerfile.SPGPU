@@ -22,6 +22,20 @@ RUN mkdir -p ${ilabSource} && \
         ${repoDir}
 
 # ----------------------------------------------------------------------------
+# For debugging
+# ----------------------------------------------------------------------------
+RUN echo "=== DEBUGGING OpenCV Installation ===" && \
+    echo "OpenCV libraries available:" && \
+    ls -la /usr/local/lib/libopencv* | head -20 && \
+    echo "OpenCV headers available:" && \
+    ls -la /usr/local/include/opencv4/opencv2/ | head -10 && \
+    echo "Python OpenCV version:" && \
+    python -c "import cv2; print(cv2.__version__)" && \
+    echo "CUDA libraries available:" && \
+    find /usr/local/lib -name "*cuda*" 2>/dev/null | head -10 && \
+    echo "=== END DEBUGGING ==="
+	
+# ----------------------------------------------------------------------------
 # Compile the BM plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.
 #
