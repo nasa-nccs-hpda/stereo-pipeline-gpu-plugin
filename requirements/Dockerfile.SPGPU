@@ -34,7 +34,15 @@ RUN echo "=== DEBUGGING OpenCV Installation ===" && \
     echo "CUDA libraries available:" && \
     find /usr/local/lib -name "*cuda*" 2>/dev/null | head -10 && \
     echo "=== END DEBUGGING ==="
-	
+
+RUN echo "=== Checking Available OpenCV Headers ===" && \
+    find /usr/local/include/opencv4 -name "*cuda*" -o -name "*stereo*" | head -20 && \
+    echo "=== Available OpenCV modules in headers ===" && \
+    ls -la /usr/local/include/opencv4/opencv2/ | grep -E "(cuda|stereo)" && \
+    echo "=== All OpenCV headers ===" && \
+    ls /usr/local/include/opencv4/opencv2/ | head -20 && \
+    echo "=== END Header Check ==="
+		
 # ----------------------------------------------------------------------------
 # Compile the BM plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.
