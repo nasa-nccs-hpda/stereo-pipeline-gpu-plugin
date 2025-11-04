@@ -96,6 +96,43 @@ RUN apt-get update && \
 #     ldconfig && \
 #     rm -rf /opt/opencv /opt/opencv_contrib /opt/opencv_build
 
+# ---
+# These next two RUN commands replace the one commented out above.
+# Install build dependencies for OpenCV CUDA
+# ---
+RUN apt-get update && \
+    apt-get install -y \
+        cmake ninja-build pkg-config \
+        libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev \
+        libtbb-dev libjpeg-dev libpng-dev libtiff-dev \
+        python3-dev python3-numpy libv4l-dev libxvidcore-dev libx264-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Build OpenCV 4.6.0 with CUDA (specific version for V100 compatibility)
+RUN cd /opt && \
+    git clone --depth 1 --branch 4.6.0 https://github.com/opencv/opencv.git && \
+    git clone --depth 1 --branch 4.6.0 https://github.com/opencv/opencv_contrib.git && \
+    cd opencv && mkdir build && cd build && \
+    cmake -G Ninja \
+      -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D OPENCV_EXTRA_MODULES_PATH=/opt/opencv_contrib/modules \
+      -D WITH_CUDA=ON \
+      -D ENABLE_FAST_MATH=1 \
+      -D CUDA_FAST_MATH=1 \
+      -D WITH_CUBLAS=1 \
+      -D WITH_V4L=ON \
+      -D WITH_QT=OFF \
+      -D WITH_OPENGL=ON \
+      -D BUILD_opencv_python3=ON \
+      -D BUILD_TESTS=OFF \
+      -D BUILD_PERF_TESTS=OFF \
+      -D BUILD_EXAMPLES=OFF \
+      -D CUDA_ARCH_BIN="6.0;7.0;7.5;8.0;8.6;9.0" \
+      .. && \
+    ninja && ninja install && ldconfig && \
+    rm -rf /opt/opencv /opt/opencv_contrib
+
 # Refresh the linker cache and create proper symlinks
 RUN ldconfig
 	
