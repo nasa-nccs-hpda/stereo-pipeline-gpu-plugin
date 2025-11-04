@@ -65,36 +65,36 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Build OpenCV from master with CUDA (DNN disabled for compatibility)
-RUN mkdir -p /opt/opencv_build && \
-    cd /opt && \
-    git clone https://github.com/opencv/opencv.git && \
-    git clone https://github.com/opencv/opencv_contrib.git && \
-    cd /opt/opencv && \
-    mkdir build && \
-    cd build && \
-    cmake -G Ninja \
-      -D CMAKE_BUILD_TYPE=Release \
-      -D CMAKE_INSTALL_PREFIX=/usr/local \
-      -D OPENCV_EXTRA_MODULES_PATH=/opt/opencv_contrib/modules \
-      -D WITH_CUDA=ON \
-      -D ENABLE_FAST_MATH=1 \
-      -D CUDA_FAST_MATH=1 \
-      -D WITH_CUBLAS=1 \
-      -D WITH_V4L=ON \
-      -D WITH_QT=OFF \
-      -D WITH_OPENGL=ON \
-      -D BUILD_opencv_python3=ON \
-      -D BUILD_opencv_python2=OFF \
-      -D BUILD_TESTS=OFF \
-      -D BUILD_PERF_TESTS=OFF \
-      -D BUILD_EXAMPLES=OFF \
-      -D BUILD_opencv_dnn=OFF \
-      -D CUDA_ARCH_BIN="6.0;7.0;7.5;8.0;8.6;9.0" \
-      .. && \
-    ninja && \
-    ninja install && \
-    ldconfig && \
-    rm -rf /opt/opencv /opt/opencv_contrib /opt/opencv_build
+# RUN mkdir -p /opt/opencv_build && \
+#     cd /opt && \
+#     git clone https://github.com/opencv/opencv.git && \
+#     git clone https://github.com/opencv/opencv_contrib.git && \
+#     cd /opt/opencv && \
+#     mkdir build && \
+#     cd build && \
+#     cmake -G Ninja \
+#       -D CMAKE_BUILD_TYPE=Release \
+#       -D CMAKE_INSTALL_PREFIX=/usr/local \
+#       -D OPENCV_EXTRA_MODULES_PATH=/opt/opencv_contrib/modules \
+#       -D WITH_CUDA=ON \
+#       -D ENABLE_FAST_MATH=1 \
+#       -D CUDA_FAST_MATH=1 \
+#       -D WITH_CUBLAS=1 \
+#       -D WITH_V4L=ON \
+#       -D WITH_QT=OFF \
+#       -D WITH_OPENGL=ON \
+#       -D BUILD_opencv_python3=ON \
+#       -D BUILD_opencv_python2=OFF \
+#       -D BUILD_TESTS=OFF \
+#       -D BUILD_PERF_TESTS=OFF \
+#       -D BUILD_EXAMPLES=OFF \
+#       -D BUILD_opencv_dnn=OFF \
+#       -D CUDA_ARCH_BIN="6.0;7.0;7.5;8.0;8.6;9.0" \
+#       .. && \
+#     ninja && \
+#     ninja install && \
+#     ldconfig && \
+#     rm -rf /opt/opencv /opt/opencv_contrib /opt/opencv_build
 
 # Refresh the linker cache and create proper symlinks
 RUN ldconfig
