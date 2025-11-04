@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.7-devel-ubuntu20.04
+FROM nvidia/cuda:11.8-devel-ubuntu20.04
 
 ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
@@ -33,8 +33,8 @@ RUN mkdir -p "/opt/DgStereo" && \
 
 # Install PyTorch and other Python packages
 RUN pip3 install --upgrade pip && \
-    pip3 install torch==1.13.1 torchvision==0.14.1 --index-url https://download.pytorch.org/whl/cu117 && \
-    pip3 install rioxarray
+	pip3 install torch==1.13.1 torchvision==0.14.1 --index-url https://download.pytorch.org/whl/cu118 && \
+	pip3 install rioxarray
 
 # Build OpenCV 4.6.0 with CUDA from source (specifically for stereo modules)
 RUN apt-get update && \
