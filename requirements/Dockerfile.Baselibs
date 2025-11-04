@@ -146,12 +146,20 @@ RUN cd /opt/opencv && mkdir build && cd build && \
     echo "=== CMake Configuration Complete ==="
 
 # Step 3: Check what modules will be built
+# Step 3: Check what modules will be built (safer diagnostic version)
 RUN cd /opt/opencv/build && \
-    echo "=== Checking CMake Configuration ===" && \
-    grep -i cuda CMakeCache.txt | head -20 && \
-    echo "=== Modules to be built ===" && \
-    cat modules/modules_to_build.cfg
-
+    echo "=== Checking Build Directory Contents ===" && \
+    ls -la && \
+    echo "=== Looking for CMakeCache.txt ===" && \
+    find . -name "CMakeCache.txt" -type f && \
+    echo "=== Looking for modules directory ===" && \
+    find . -name "modules" -type d && \
+    echo "=== Checking for CUDA in CMakeCache (if exists) ===" && \
+    (grep -i cuda CMakeCache.txt | head -10 || echo "No CUDA entries found or CMakeCache.txt missing") && \
+    echo "=== Checking CMake output files ===" && \
+    ls -la CMake* 2>/dev/null || echo "No CMake files found" && \
+    echo "=== End diagnostics ==="
+	
 # Step 4: Build (simplified)
 RUN cd /opt/opencv/build && \
     echo "=== Starting Build ===" && \
