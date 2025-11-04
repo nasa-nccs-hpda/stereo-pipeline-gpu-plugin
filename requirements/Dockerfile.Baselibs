@@ -4,8 +4,9 @@
 #
 # Instead, use the following version.
 # FROM nvcr.io/nvidia/pytorch:23.05-py3
+# FROM nvcr.io/nvidia/pytorch:22.12-py3
 # ---
-FROM nvcr.io/nvidia/pytorch:22.12-py3
+FROM nvidia/cuda:11.8-devel-ubuntu20.04
 
 ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
