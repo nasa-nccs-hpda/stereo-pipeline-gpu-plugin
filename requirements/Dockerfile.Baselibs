@@ -5,7 +5,7 @@
 # Instead, use the following version.
 # FROM nvcr.io/nvidia/pytorch:23.05-py3
 # ---
-FROM nvcr.io/nvidia/cuda:11.8-devel-ubuntu20.04
+FROM nvcr.io/nvidia/pytorch:22.12-py3
 
 ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
@@ -95,13 +95,12 @@ RUN apt-get update && \
 #     ninja install && \
 #     ldconfig && \
 #     rm -rf /opt/opencv /opt/opencv_contrib /opt/opencv_build
-
-# Then install PyTorch and OpenCV with CUDA support
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    pip3 install torch==1.13.1 torchvision==0.14.1 && \
-    pip3 install opencv-contrib-python==4.6.0.66
-		
+	
+RUN pip install opencv-contrib-python==4.6.0.66 && \
+    apt-get update && \
+    apt-get install -y libopencv-dev libopencv-contrib-dev && \
+    rm -rf /var/lib/apt/lists/*
+	
 # Refresh the linker cache and create proper symlinks
 RUN ldconfig
 	
