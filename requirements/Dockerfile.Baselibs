@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install CUDA from NVIDIA's official repository
 RUN apt-get update && \
     apt-get install -y wget gnupg2 && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb && \
     dpkg -i cuda-keyring_1.0-1_all.deb && \
     apt-get update && \
     apt-get install -y cuda-toolkit-11-7 && \
@@ -85,4 +85,4 @@ RUN echo "=== Final verification ===" && \
 
 HEALTHCHECK NONE
 ENTRYPOINT []
-CMD ["/bin/bash"]
+CMD []/bin/bash"]
