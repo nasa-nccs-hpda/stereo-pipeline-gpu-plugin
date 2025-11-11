@@ -65,7 +65,9 @@ Mat robustNormalize(const Mat& src) {
 // ----------------------------------------------------------------------------
 int runCorrelator(int argc, char** argv)
 {
-    if (argc < 4)
+	system("env | grep -E '(CUDA|NVIDIA|LD_LIBRARY)' > child_env.txt");
+    
+	if (argc < 4)
 	{
         cerr << "Usage:\n  "
 			 << argv[0]
