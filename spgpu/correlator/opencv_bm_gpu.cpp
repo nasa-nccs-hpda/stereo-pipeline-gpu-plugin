@@ -68,7 +68,7 @@ int runCorrelator(int argc, char** argv)
 	// ***
 	// Debug LD_LIBRARY_PATH.
 	// ***
-	setenv("LD_LIBRARY_PATH", "/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs:/opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib:/opt/StereoPipeline/lib", 1)
+	setenv("LD_LIBRARY_PATH", "/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs:/opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib:/opt/StereoPipeline/lib", 1);
 		
 	system("env | grep -E '(CUDA|NVIDIA|LD_LIBRARY)' > child_env.txt");
 	// ***
