@@ -53,6 +53,9 @@ RUN mkdir -p ${libDir}
 # Testing this.
 RUN ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
 
+RUN ln -s /lib/x86_64-linux-gnu/libicudata.so.70 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
+
+RUN ln -s /usr/local/lib/libopencv_cudastereo.so.413 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
 
 RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
