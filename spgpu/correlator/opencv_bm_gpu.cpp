@@ -15,6 +15,45 @@ using namespace cv;
 #define SKIP_MAIN
 #endif
 
+// ----------------------------------------------------------------------------
+// initializeCleanOpencvCuda
+// ----------------------------------------------------------------------------
+void initializeCleanOpencvCuda() 
+{
+    // Set environment variables for clean CUDA state
+    setenv("CUDA_CACHE_DISABLE", "1", 1);
+    setenv("CUDA_LAUNCH_BLOCKING", "1", 1);
+    
+    try 
+	{
+        // Reset OpenCV's CUDA device state
+        cv::cuda::resetDevice();
+        
+        // Set CUDA device explicitly
+        cv::cuda::setDevice(0);
+        
+        // Verify CUDA device count
+        int device_count = cv::cuda::getCudaEnabledDeviceCount();
+		
+        if (device_count == 0) 
+		{
+            cerr << "No CUDA-enabled devices found for OpenCV" << std::endl;
+            exit(1);
+        }
+        
+        cout << "OpenCV CUDA initialized successfully with " 
+             << device_count << " device(s)" << endl;
+                  
+    } catch (const cv::Exception& e) 
+	{
+        cerr << "OpenCV CUDA initialization failed: " << e.what() << endl;
+        exit(1);
+    }
+}
+
+// ----------------------------------------------------------------------------
+// SaveGeoTIFF
+// ----------------------------------------------------------------------------
 void SaveGeoTIFF(const string& filename, const Mat& data)
 {
     GDALAllRegister();
@@ -40,6 +79,9 @@ void SaveGeoTIFF(const string& filename, const Mat& data)
     cout << "Saved: " << filename << endl;
 }
 
+// ----------------------------------------------------------------------------
+// robustNormalize
+// ----------------------------------------------------------------------------
 Mat robustNormalize(const Mat& src) {
     Mat mask = src == src;
     double minVal, maxVal;
@@ -68,9 +110,10 @@ int runCorrelator(int argc, char** argv)
 	// ***
 	// Debug LD_LIBRARY_PATH.
 	// ***
-	setenv("LD_LIBRARY_PATH", "/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs:/opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib:/opt/StereoPipeline/lib", 1);
-		
-	system("env | grep -E '(CUDA|NVIDIA|LD_LIBRARY)' > child_env.txt");
+	// setenv("LD_LIBRARY_PATH", "/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs:/opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib:/opt/StereoPipeline/lib", 1);
+	//
+	// system("env | grep -E '(CUDA|NVIDIA|LD_LIBRARY)' > child_env.txt");
+    initialize_clean_opencv_cuda();
 	// ***
 	// End Debug
 	// ***
