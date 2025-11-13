@@ -1,6 +1,7 @@
 FROM nvcr.io/nvidia/pytorch:24.09-py3
 
-ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
+#ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/3.5.0/StereoPipeline-3.5.0-2025-04-28-x86_64-Linux.tar.bz2"
+ARG STEREO_URL="https://github.com/NeoGeographyToolkit/StereoPipeline/releases/download/2025-11-13-daily-build/StereoPipeline-3.6.0-alpha-2025-11-13-x86_64-Linux.tar.bz2"
 ENV PATH="$PATH:/opt/StereoPipeline/bin"
 ENV DEBIAN_FRONTEND=noninteractive
 
