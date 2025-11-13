@@ -40,9 +40,9 @@ RUN cp ${buildDir}/${name} $binDir
 ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
 RUN mkdir -p ${libDir}
 
+RUN ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
+
 # Comment out these links to determine if Oleg's LD_LIBRARY_PATH changes worked.
-# RUN ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
-#
 # RUN ln -s /lib/x86_64-linux-gnu/libicudata.so.70 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
 #
 # RUN ln -s /usr/local/lib/libopencv_cudastereo.so.413 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
