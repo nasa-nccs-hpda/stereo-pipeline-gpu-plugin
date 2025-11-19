@@ -5,9 +5,14 @@ name: CI to Dockerhub - SPGPU App
 # as is, but will change it at some point in the near future.
 
 on:
-  push:
-    branches:
-      - 'main'
+  workflow_run:
+    workflows: ["CI to Dockerhub - Baselibs"] # Trigger when "Workflow A" completes
+    types:
+      - completed
+    branches: [main] # Optionally, specify branches
+  # push:
+  #  branches:
+  #    - 'main'
   workflow_dispatch:   # <---- Manual trigger
 
 jobs:
