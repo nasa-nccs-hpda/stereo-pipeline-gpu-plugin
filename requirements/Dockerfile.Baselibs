@@ -56,10 +56,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Build OpenCV from master with CUDA (DNN disabled for compatibility)
+# TODO: Consider using a specific branch from OpenCV, right now, 4.13 works
 RUN mkdir -p /opt/opencv_build && \
     cd /opt && \
-    git clone -b 4.9.0 https://github.com/opencv/opencv.git && \
-    git clone -b 4.9.0 https://github.com/opencv/opencv_contrib.git && \
+    git clone https://github.com/opencv/opencv.git && \
+    git clone https://github.com/opencv/opencv_contrib.git && \
     cd /opt/opencv && \
     mkdir build && \
     cd build && \
