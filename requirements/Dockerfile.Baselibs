@@ -6,7 +6,7 @@ ENV PATH="$PATH:/opt/StereoPipeline/bin"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # This should fix errors finding these libraries.
-ENV LD_PRELOAD="/lib/x86_64-linux-gnu/libfreexl.so.1:/lib/x86_64-linux-gnu/libproj.so"
+# ENV LD_PRELOAD="/lib/x86_64-linux-gnu/libfreexl.so.1:/lib/x86_64-linux-gnu/libproj.so"
 
 # Install main dependencies and GDAL
 RUN apt-get update && \
@@ -29,6 +29,8 @@ RUN mkdir -p "/opt/DgStereo" && \
     tar -jxf StereoPipeline.tar.bz2 && \
     rm /opt/StereoPipeline.tar.bz2 && \
     mv /opt/StereoPipeline* /opt/StereoPipeline
+
+ENV ISISROOT=/opt/StereoPipeline
 
 # Python geospatial tools
 RUN pip install rioxarray
@@ -56,8 +58,8 @@ RUN apt-get update && \
 # Build OpenCV from master with CUDA (DNN disabled for compatibility)
 RUN mkdir -p /opt/opencv_build && \
     cd /opt && \
-    git clone https://github.com/opencv/opencv.git && \
-    git clone https://github.com/opencv/opencv_contrib.git && \
+    git clone -b 4.9.0 https://github.com/opencv/opencv.git && \
+    git clone -b 4.x https://github.com/opencv/opencv_contrib.git && \
     cd /opt/opencv && \
     mkdir build && \
     cd build && \
