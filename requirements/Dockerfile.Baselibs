@@ -59,7 +59,7 @@ RUN apt-get update && \
 RUN mkdir -p /opt/opencv_build && \
     cd /opt && \
     git clone -b 4.9.0 https://github.com/opencv/opencv.git && \
-    git clone -b 4.x https://github.com/opencv/opencv_contrib.git && \
+    git clone -b 4.9.0 https://github.com/opencv/opencv_contrib.git && \
     cd /opt/opencv && \
     mkdir build && \
     cd build && \
