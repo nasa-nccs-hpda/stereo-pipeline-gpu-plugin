@@ -55,7 +55,7 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/ste
 RUN printf "  %s %s %s\n" \
     "$name" \
     "${plugInDir}/${name}/bin/${name}" \
-    "/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/compat/lib:/usr/local/lib:${stereoPipelineDir}/lib:${stereoPipelineDir}/${plugInDir}/${name}/lib" \
+    "/opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib:/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs" \
     >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
