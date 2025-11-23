@@ -1,9 +1,5 @@
-FROM nasanccs/spgpu-baselibs:latest
-
 # ----------------------------------------------------------------------------
 # https://stereopipeline.readthedocs.io/en/latest/stereo_algorithms.html#adding-new-algorithms-to-asp
-
-#
 # Paths
 # ----------------------------------------------------------------------------
 ARG ilabSource="/usr/local/ilab"
@@ -12,12 +8,15 @@ ARG repoDir=${ilabSource}/${repoName}
 ARG buildDir=${ilabSource}/"buildDir"
 ARG stereoPipelineDir="/opt/StereoPipeline"
 ARG plugInDir="plugins/stereo"
+ARG SPGPU_TAG="main"
+
+FROM nasanccs/spgpu-baselibs:${SPGPU_TAG}
 
 # ----------------------------------------------------------------------------
 # To get the GPU plug-in files, the repository must be cloned.
 # ----------------------------------------------------------------------------
 RUN mkdir -p ${ilabSource} && \
-    git clone --single-branch --branch main \
+    git clone --depth 1 --branch ${SPGPU_TAG} \
 		https://github.com/nasa-nccs-hpda/${repoName} \
         ${repoDir}
 
@@ -29,18 +28,21 @@ RUN mkdir -p ${ilabSource} && \
 # Ensure that is commented out, unless the intention is to debug.
 # ----------------------------------------------------------------------------
 ARG name="opencv_bm_gpu"
-RUN mkdir -p ${buildDir}
-
-RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
-
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-RUN mkdir -p ${binDir}
-RUN cp ${buildDir}/${name} $binDir
-
 ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
-RUN mkdir -p ${libDir}
-
-RUN ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
+RUN mkdir -p ${buildDir} && \
+    g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 \
+        -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui \
+        -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1 && \
+    mkdir -p ${binDir} && \
+    cp ${buildDir}/${name} $binDir && \
+    mkdir -p ${libDir} && \
+    ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/ && \
+    printf "  %s %s %s\n" \
+        "$name" \
+        "${plugInDir}/${name}/bin/${name}" \
+        "${libDir}:/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs" \
+        >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # Comment out these links to determine if Oleg's LD_LIBRARY_PATH changes worked.
 # RUN ln -s /lib/x86_64-linux-gnu/libicudata.so.70 /opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib/
@@ -52,56 +54,63 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /opt/StereoPipeline/plugins/ste
 
 # Instead of just "plugins/stereo/opencv_bm_gpu/lib", we encode the full runtime
 # LD_LIBRARY_PATH that stereo_corr should use when calling the plugin.
-RUN printf "  %s %s %s\n" \
-    "$name" \
-    "${plugInDir}/${name}/bin/${name}" \
-    "/opt/StereoPipeline/plugins/stereo/opencv_bm_gpu/lib:/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs" \
-    >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the BP plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.
 # ----------------------------------------------------------------------------
 ARG name="opencv_bp_gpu"
-RUN mkdir -p ${buildDir}
-
-RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
-
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-RUN mkdir -p ${binDir}
-RUN cp ${buildDir}/${name} $binDir
-
-RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
+RUN mkdir -p ${buildDir} && \
+    g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 \
+    -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d \
+    -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1 && \
+    mkdir -p ${binDir} && \
+    cp ${buildDir}/${name} $binDir && \
+    printf "  %s %s %s\n" \
+        "$name" \
+        "${plugInDir}/${name}/bin/${name}" \
+        "${libDir}:/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs" \
+        >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the CSBP plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.
 # ----------------------------------------------------------------------------
 ARG name="opencv_csbp_gpu"
-RUN mkdir -p ${buildDir}
-
-RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
-
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-RUN mkdir -p ${binDir}
-RUN cp ${buildDir}/${name} $binDir
-
-RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
+RUN mkdir -p ${buildDir} && \
+    g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 \
+    -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d \
+    -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1 && \
+    mkdir -p ${binDir} && \
+    cp ${buildDir}/${name} $binDir && \
+    printf "  %s %s %s\n" \
+        "$name" \
+        "${plugInDir}/${name}/bin/${name}" \
+        "${libDir}:/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs" \
+        >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the SGM plug in, copy it to Stereo Pipeline and
 # update plugin_list.txt.
 # ----------------------------------------------------------------------------
 ARG name="opencv_sgm_gpu"
-RUN mkdir -p ${buildDir}
-
-RUN g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1
-
 ARG binDir=${stereoPipelineDir}/${plugInDir}/${name}/bin
-RUN mkdir -p ${binDir}
-RUN cp ${buildDir}/${name} $binDir
-
-RUN printf "  %s %s %s\n" "$name" "${plugInDir}/${name}/bin/${name}" "${plugInDir}/${name}/lib" >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
+ARG libDir=${stereoPipelineDir}/${plugInDir}/${name}/lib
+RUN mkdir -p ${buildDir} && \
+    g++ ${repoDir}/spgpu/correlator/${name}.cpp -o ${buildDir}/${name} -I/usr/local/include/opencv4 \
+    -I/usr/include/gdal -L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_calib3d \
+    -lopencv_cudaimgproc -lopencv_cudastereo -lopencv_imgcodecs -lgdal -DHAVE_OPENCV_CUDA=1 && \
+    mkdir -p ${binDir} && \
+    cp ${buildDir}/${name} $binDir && \
+    printf "  %s %s %s\n" \
+        "$name" \
+        "${plugInDir}/${name}/bin/${name}" \
+        "${libDir}:/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs" \
+        >> ${stereoPipelineDir}/${plugInDir}/plugin_list.txt
 
 # ----------------------------------------------------------------------------
 # Compile the MGM plug in, copy it to Stereo Pipeline and

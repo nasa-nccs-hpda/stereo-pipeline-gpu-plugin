@@ -1,18 +1,12 @@
-name: CI to Dockerhub - SPGPU App Dev
-
-# TODO: This workflow will change to follow the version of the
-# release from SPGPU. For now, we will container with this effort
-# as is, but will change it at some point in the near future.
+name: CI to Dockerhub - Baselibs Dev
 
 on:
-  workflow_run:
-    workflows: ["CI to Dockerhub - Baselibs Dev"] # Trigger when "Workflow A" completes
-    types:
-      - completed
-    branches: [main] # Optionally, specify branches
-  # push:
-  #  branches:
-  #    - 'main'
+  push:
+    branches:
+      - 'main'
+      - 'container-test'
+  schedule:
+    - cron: '0 0 1 * *'   # At 00:00 on day-of-month 1 (monthly)
   workflow_dispatch:   # <---- Manual trigger
 
 jobs:
@@ -60,6 +54,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./requirements/Dockerfile.SPGPU
+          file: ./requirements/Dockerfile.Baselibs
           push: true
-          tags: nasanccs/spgpu:dev
+          tags: nasanccs/spgpu-baselibs:dev
