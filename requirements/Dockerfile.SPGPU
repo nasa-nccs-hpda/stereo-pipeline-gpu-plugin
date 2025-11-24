@@ -2,6 +2,10 @@
 # https://stereopipeline.readthedocs.io/en/latest/stereo_algorithms.html#adding-new-algorithms-to-asp
 # Paths
 # ----------------------------------------------------------------------------
+ARG SPGPU_TAG="main"
+
+FROM nasanccs/spgpu-baselibs:${SPGPU_TAG}
+
 ARG ilabSource="/usr/local/ilab"
 ARG repoName="stereo-pipeline-gpu-plugin"
 ARG repoDir=${ilabSource}/${repoName}
@@ -9,8 +13,6 @@ ARG buildDir=${ilabSource}/"buildDir"
 ARG stereoPipelineDir="/opt/StereoPipeline"
 ARG plugInDir="plugins/stereo"
 ARG SPGPU_TAG="main"
-
-FROM nasanccs/spgpu-baselibs:${SPGPU_TAG}
 
 # ----------------------------------------------------------------------------
 # To get the GPU plug-in files, the repository must be cloned.
