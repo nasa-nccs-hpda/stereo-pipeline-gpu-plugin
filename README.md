@@ -1,6 +1,28 @@
 # SPGPU - Stereo Pipeline GPU Plugin
 
+[![DOI](https://zenodo.org/badge/1042752062.svg)](https://doi.org/10.5281/zenodo.17662736)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://github.com/nasa-nccs-hpda/stereo-pipeline-gpu-plugin/README.md)
+[![Build Docker - Baselibs](https://github.com/nasa-nccs-hpda/stereo-pipeline-gpu-plugin/actions/workflows/dockerhub-baselibs.yml/badge.svg?event=release)](https://github.com/nasa-nccs-hpda/stereo-pipeline-gpu-plugin/actions/workflows/dockerhub-baselibs.yml)
+[![Build Docker - SPGPU](https://github.com/nasa-nccs-hpda/stereo-pipeline-gpu-plugin/actions/workflows/dockerhub-spgpu.yml/badge.svg?event=release)](https://github.com/nasa-nccs-hpda/stereo-pipeline-gpu-plugin/actions/workflows/dockerhub-spgpu.yml)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/nasa-nccs-hpda/stereo-pipeline-gpu-plugin)
+![Docker Image Version](https://img.shields.io/docker/v/nasanccs/stereo-pipeline-gpu-plugin?label=Docker)
+![License](https://img.shields.io/github/license/nasa-nccs-hpda/stereo-pipeline-gpu-plugin)
+
 Stereo Pipeline GPU Plugin implementation.
+
+## Quick Start
+
+### Container Download
+
+```bash
+singularity build --sandbox /lscratch/$USER/container/spgpu docker://nasanccs/spgpu:latest
+```
+
+### Easy Workflow
+
+```bash
+parallel_stereo --alignment-method local_epipolar --session-type rpc --stereo-algorithm "opencv_bm_gpu -block_size 21 -texture_thresh 10 -prefilter_cap 31 -uniqueness_ratio 15 -speckle_size 100 -speckle_range 32 -disp12_diff 1 -tile 1024 -overlap 0" /panfs/ccds02/nobackup/people/sbhusha1/ostfl/maxar/WV02WV02_20091222_10300100023BC100_1030010003D22F00/10300100023BC100.r100.tif /panfs/ccds02/nobackup/people/sbhusha1/ostfl/maxar/WV02WV02_20091222_10300100023BC100_1030010003D22F00/10300100023BC100.r100.xml /panfs/ccds02/nobackup/people/sbhusha1/ostfl/maxar/WV02WV02_20091222_10300100023BC100_1030010003D22F00/1030010003D22F00.r100.tif /panfs/ccds02/nobackup/people/sbhusha1/ostfl/maxar/WV02WV02_20091222_10300100023BC100_1030010003D22F00/1030010003D22F00.r100.xml opencv_bm_gpu
+```
 
 ## Proposal Summary
 
